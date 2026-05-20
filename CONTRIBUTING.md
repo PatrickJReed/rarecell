@@ -9,7 +9,7 @@ This repo uses [uv](https://docs.astral.sh/uv/) for environment and
 dependency management. Install uv, then from the repo root:
 
 ```bash
-uv sync --all-extras --dev
+uv sync --all-packages --all-extras --dev
 ```
 
 This creates `.venv/` and installs every workspace package with its
