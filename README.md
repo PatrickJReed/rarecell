@@ -21,7 +21,7 @@ Design docs and implementation plans live under `docs/`.
 ## Getting started
 
 ```bash
-uv sync --all-extras --dev
+uv sync --all-packages --all-extras --dev
 uv run pytest
 ```
 
