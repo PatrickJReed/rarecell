@@ -1,4 +1,5 @@
-import pytest
+from pathlib import Path
+
 from rarecell.profile.schema import (
     AutoPolicy,
     BatchCorrection,
@@ -32,9 +33,12 @@ def test_minimal_valid_profile():
     assert p.content_hash is None           # only set on freeze
 
 
-@pytest.mark.skip(reason="needs preset from Task 6")
 def test_yaml_roundtrip(tmp_path):
-    src = TargetCellProfile.from_yaml_path("packages/rarecell/src/rarecell/profile/presets/t_cell_pbmc.yaml")
+    preset = (
+        Path(__file__).resolve().parents[2]
+        / "src/rarecell/profile/presets/t_cell_pbmc.yaml"
+    )
+    src = TargetCellProfile.from_yaml_path(preset)
     out = tmp_path / "out.yaml"
     src.to_yaml_path(out)
     rebuilt = TargetCellProfile.from_yaml_path(out)

@@ -1,0 +1,62 @@
+schema_version: "1.0"
+profile_id: "preset-dendritic-cell-v0.1"
+name: "Dendritic cells"
+description: "Dendritic-cell isolation from PBMC, blood, or lymph-node single-cell RNA-seq"
+target_lineage: "myeloid"
+tissue: ["blood", "pbmc", "lymph_node"]
+expected_abundance:
+  min_fraction: 0.005
+  max_fraction: 0.05
+  notes: "DCs are <2% of PBMC"
+
+positive_markers:
+  pan_dc:
+    genes: [CLEC9A, CLEC10A, FCER1A, ITGAX, CD1C, IRF8]
+    threshold_z: 1.0
+    citations:
+      - {source_id: "panglaodb:Dendritic_cell", source: "panglaodb"}
+
+negative_markers:
+  t_cell:
+    genes: [CD3D, CD3E]
+    exclusion_threshold_z: 1.5
+  b_cell:
+    genes: [MS4A1, CD79A]
+    exclusion_threshold_z: 1.5
+  nk_cell:
+    genes: [NCAM1, NKG7]
+    exclusion_threshold_z: 1.5
+
+reference_labels:
+  celltypist_models:
+    - model: "Immune_All_Low.pkl"
+      match_patterns: ["DC", "dendritic", "cDC", "pDC", "Plasmacytoid"]
+      enabled: true
+
+biccn_rules:
+  enabled: false
+
+qc:
+  min_genes_per_cell: 200
+  max_pct_mt: 10
+  max_genes_per_cell: 10000
+  min_cells_per_gene: 3
+  rationale: "Standard PBMC QC"
+
+purify:
+  enabled: true
+  high_resolution: 2.0
+  min_cluster_purity: 0.7
+
+batch_correction:
+  in_dataset: "harmony"
+  batch_key: "sample_id"
+
+auto_policy:
+  gates:
+    gate1_cluster_decisions: "recommendation"
+    gate2_purify_decisions: "recommendation"
+    gate3_final: "accept"
+
+frozen: false
+human_reviewed: false
