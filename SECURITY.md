@@ -7,9 +7,6 @@ branch receives security fixes.
 
 ## Reporting a vulnerability
 
-Please email `security@example.invalid` with a description of the
-issue and, if possible, a minimal reproduction. This address is an
-explicit placeholder for v0.1 and will be replaced with a real contact
-before the v1.0 release.
+Please open a private security advisory at https://github.com/patrickjreed/rarecell/security/advisories/new (replace `patrickjreed` with the actual repo owner once the GitHub remote is created).
 
 Do **not** open a public GitHub issue for vulnerabilities.
