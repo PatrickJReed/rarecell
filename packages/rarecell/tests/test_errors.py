@@ -1,15 +1,16 @@
 import pytest
 from rarecell.errors import (
-    RareCellError,
-    MissingRawCountsError,
-    InvalidProfileError,
-    UnreviewedProfileError,
-    IncompatibleSchemaError,
-    MCPUnreachableError,
-    LLMBudgetExceededError,
     CacheCorruptedError,
+    IncompatibleSchemaError,
+    InvalidProfileError,
     IsolationAbortedError,
+    LLMBudgetExceededError,
+    MCPUnreachableError,
+    MissingRawCountsError,
+    RareCellError,
+    UnreviewedProfileError,
 )
+
 
 @pytest.mark.parametrize("cls", [
     MissingRawCountsError, InvalidProfileError, UnreviewedProfileError,
