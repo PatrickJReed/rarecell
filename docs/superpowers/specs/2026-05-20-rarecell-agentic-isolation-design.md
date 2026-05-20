@@ -188,7 +188,7 @@ S7  Write IsolationReport
 
 Three hard gates. Each gate has:
 - Interactive mode: prompts the user.
-- Auto mode: applies the profile's `auto_policy` (defaults: accept agent recommendation; abort if recommendation confidence < 0.6 or final abundance > 5× the profile's expected bounds).
+- Auto mode: applies the profile's `auto_policy`. Valid values per gate are: `"recommendation"` (accept agent recommendation), `"abort_on_ambiguity"` (abort if recommendation confidence is below threshold), and `"conservative_drop"` (when ambiguous, drop rather than keep). Defaults: `"recommendation"` for Gate 1 and Gate 2, `"accept"` for Gate 3. Run aborts on `recommendation_confidence < 0.6` or `final_abundance > 5×` the profile's expected bounds.
 - Logging: both the agent's recommendation and the user's (or auto-policy's) decision are written to `decisions.jsonl`.
 
 ### 5.3 What the agent does at each gate
@@ -297,7 +297,7 @@ input: adata
 profile: profile.yaml
 ```
 
-`IsolateWidget` renders the consensus table with conditional formatting (the same color-coded `plot_consensus_evidence_table` semantics from `als_utils`), one ipywidgets button per gate decision, agent reasoning streaming in a side panel.
+`IsolateWidget` renders the consensus table with conditional formatting — porting the color-coded semantics from the existing `plot_consensus_evidence_table` in the ALS project's `als_utils.py` — with one ipywidgets button per gate decision and agent reasoning streaming in a side panel.
 
 **CLI** — `rarecell` via Typer:
 
@@ -347,11 +347,11 @@ bash replay.sh
 
 ## 8. Testing
 
-### 8.1 Five test categories
+### 8.1 Six test categories
 
 1. **Unit tests** — per `core/` module, pydantic validators, RAG retrievers (MCP mocked), citation propagation, `IsolationReport` round-trip. Coverage target: 80%+ on `core/`, `profile/`, `report.py`.
 2. **Integration tests (synthetic)** — `tests/fixtures/make_synthetic.py` generates a 5,000-cell AnnData with 4 clusters and one planted ~5%-rare population. Every gate decision has a known correct answer; tests assert the agent's recommendation matches.
-3. **Integration tests (public)** — small public dataset (10x PBMC 3k or CELLxGENE subset, ~10 MB). Cached on first test run.
+3. **Integration tests (public)** — canonical fixture is **10x PBMC 3k** (~7 MB), fetched and cached on first test run. CELLxGENE-hosted subsets are documented alternatives but not used in CI.
 4. **Replay determinism** — runs isolation against the synthetic fixture twice with same input + profile + recorded decisions; asserts byte-identical `isolated.h5ad`. This is the regression test of record.
 5. **MCP smoke tests** — start `rarecell-mcp` and `rarecell-mcp-knowledge` as subprocesses; call every advertised tool; validate response schemas.
 6. **Property tests (hypothesis)** — profile YAMLs round-trip through pydantic without loss; manifest hashes stable.
