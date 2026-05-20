@@ -10,6 +10,8 @@ from typing import Literal
 import yaml
 from pydantic import BaseModel, Field, field_validator, model_validator
 
+from rarecell.errors import UnreviewedProfileError
+
 
 class Citation(BaseModel):
     source_id: str
@@ -129,6 +131,25 @@ class TargetCellProfile(BaseModel):
         if not v:
             raise ValueError("at least one positive_markers panel is required")
         return v
+
+    @model_validator(mode="after")
+    def _frozen_requires_review(self) -> TargetCellProfile:
+        if self.frozen and not self.human_reviewed:
+            raise UnreviewedProfileError(
+                "Cannot set frozen=True without human_reviewed=True. "
+                "A human must review and sign off on the profile before it is frozen."
+            )
+        return self
+
+    def freeze(self) -> TargetCellProfile:
+        """Return a frozen copy with content_hash set. Requires human_reviewed=True."""
+        if not self.human_reviewed:
+            raise UnreviewedProfileError(
+                "freeze() requires human_reviewed=True. "
+                "Set human_reviewed=True and provide reviewer email before freezing."
+            )
+        h = self.compute_content_hash()
+        return self.model_copy(update={"frozen": True, "content_hash": h})
 
     @classmethod
     def from_yaml_path(cls, path: str | Path) -> TargetCellProfile:
