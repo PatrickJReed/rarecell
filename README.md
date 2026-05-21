@@ -18,6 +18,9 @@ Packages live under `packages/`:
 - `packages/rarecell-mcp-knowledge/` — FastMCP server for literature + marker
   retrieval (CellMarker, PanglaoDB, MSigDB, Enrichr, Europe PMC). Consumable
   from any MCP client.
+- `packages/rarecell-mcp/` — exposed FastMCP workflow server. Drive
+  `draft | validate | isolate | inspect` from Claude Desktop / Claude
+  Code / Cursor.
 
 Design docs and implementation plans live under `docs/`.
 
@@ -45,3 +48,27 @@ provides `ClaudeRecommender` (LLM-backed swap-in for the heuristic
 prompts into reviewable `TargetCellProfile` YAMLs.
 
 Without the extra, `rarecell.core` works unchanged with `BasicRecommender`.
+
+## CLI
+
+After `pip install rarecell`:
+
+```bash
+rarecell isolate --input adata.h5ad --profile profile.yaml --out-dir runs/run1
+rarecell draft --prompt "rare T cells in PBMC" --out draft.yaml
+rarecell review --report runs/run1
+```
+
+Drafting requires the `[agent]` extra and `ANTHROPIC_API_KEY` in the environment.
+
+## Driving from an MCP client
+
+Install `rarecell-mcp` and wire it into Claude Desktop or Claude Code:
+
+```bash
+pip install rarecell-mcp
+```
+
+```json
+{"mcpServers": {"rarecell": {"command": "rarecell-mcp", "args": ["serve"]}}}
+```
