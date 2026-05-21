@@ -21,3 +21,6 @@ data/
 !**/tests/*/data/*.h5ad
 !**/tests/*/data/*.tsv
 .pybiomart.sqlite
+
+# Local Claude Code worktrees (development-only; never push to remote)
+.claude/
