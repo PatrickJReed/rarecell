@@ -28,8 +28,7 @@ def _load_recommender(profile, use_claude: bool):
         from rarecell.agent.recommender import ClaudeRecommender
     except ImportError as e:
         raise typer.BadParameter(
-            "--use-claude requires the [agent] extra. "
-            "Install with: pip install 'rarecell[agent]'"
+            "--use-claude requires the [agent] extra. Install with: pip install 'rarecell[agent]'"
         ) from e
     api_key = os.environ.get("ANTHROPIC_API_KEY")
     if not api_key:
@@ -115,7 +114,7 @@ def draft(
         from rarecell.rag.knowledge import build_knowledge_session
     except ImportError as e:
         raise typer.BadParameter(
-            "draft requires the [agent] extra. " "Install with: pip install 'rarecell[agent]'"
+            "draft requires the [agent] extra. Install with: pip install 'rarecell[agent]'"
         ) from e
 
     api_key = os.environ.get("ANTHROPIC_API_KEY")
