@@ -1,11 +1,18 @@
 """Tests for the IsolateRunner state machine driver."""
 from __future__ import annotations
 
-import importlib.util
 import sys
 from pathlib import Path
 
-from rarecell.profile.schema import (
+# Add fixtures directory to path for direct import
+_repo_root = Path(__file__).resolve().parents[4]
+_fixtures_path = _repo_root / "tests" / "fixtures"
+if str(_fixtures_path) not in sys.path:
+    sys.path.insert(0, str(_fixtures_path))
+
+from make_synthetic import make_synthetic  # noqa: E402, I001
+
+from rarecell.profile.schema import (  # noqa: E402
     BatchCorrection,
     BICCNRules,
     Citation,
@@ -16,22 +23,8 @@ from rarecell.profile.schema import (
     ReferenceLabels,
     TargetCellProfile,
 )
-from rarecell.recommender.basic import BasicRecommender
-from rarecell.state_machine.isolate import IsolateRunner
-
-
-def _load_make_synthetic():
-    repo_root = Path(__file__).resolve().parents[4]
-    fixture_path = repo_root / "tests" / "fixtures" / "make_synthetic.py"
-    spec = importlib.util.spec_from_file_location("_rc_make_synthetic", fixture_path)
-    assert spec is not None and spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    sys.modules.setdefault("_rc_make_synthetic", module)
-    spec.loader.exec_module(module)
-    return module.make_synthetic
-
-
-make_synthetic = _load_make_synthetic()
+from rarecell.recommender.basic import BasicRecommender  # noqa: E402
+from rarecell.state_machine.isolate import IsolateRunner  # noqa: E402
 
 
 def _profile_for_synthetic() -> TargetCellProfile:
