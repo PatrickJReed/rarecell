@@ -10,6 +10,7 @@ resolution-markers = [
 [manifest]
 members = [
     "rarecell",
+    "rarecell-mcp",
     "rarecell-mcp-knowledge",
     "rarecell-workspace",
 ]
@@ -2854,6 +2855,32 @@ requires-dist = [
     { name = "typer", specifier = ">=0.12" },
 ]
 provides-extras = ["agent", "dev"]
+
+[[package]]
+name = "rarecell-mcp"
+version = "0.1.0.dev0"
+source = { editable = "packages/rarecell-mcp" }
+dependencies = [
+    { name = "fastmcp" },
+    { name = "rarecell" },
+]
+
+[package.optional-dependencies]
+dev = [
+    { name = "pytest" },
+    { name = "respx" },
+    { name = "ruff" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "fastmcp", specifier = ">=0.4" },
+    { name = "pytest", marker = "extra == 'dev'", specifier = ">=8" },
+    { name = "rarecell", editable = "packages/rarecell" },
+    { name = "respx", marker = "extra == 'dev'", specifier = ">=0.21" },
+    { name = "ruff", marker = "extra == 'dev'" },
+]
+provides-extras = ["dev"]
 
 [[package]]
 name = "rarecell-mcp-knowledge"
