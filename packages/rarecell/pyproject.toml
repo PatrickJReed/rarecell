@@ -1,6 +1,6 @@
 [project]
 name = "rarecell"
-version = "0.1.0.dev0"
+version = "0.1.0.dev1"
 description = "Agentic rare-cell isolation from single-cell RNA-seq"
 authors = [{name = "Patrick Reed", email = "patrickjenningsreed@gmail.com"}]
 license = "Apache-2.0"
