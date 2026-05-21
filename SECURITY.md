@@ -7,6 +7,6 @@ branch receives security fixes.
 
 ## Reporting a vulnerability
 
-Please open a private security advisory at https://github.com/patrickjreed/rarecell/security/advisories/new (replace `patrickjreed` with the actual repo owner once the GitHub remote is created).
+Please open a private security advisory at https://github.com/PatrickJReed/rarecell/security/advisories/new.
 
 Do **not** open a public GitHub issue for vulnerabilities.
