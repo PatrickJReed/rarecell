@@ -15,7 +15,7 @@ GENES = [
     "MS4A1", "CD79A",                    # B cell (negative panel)
     "GFAP", "AQP4", "ALDH1L1",           # astrocyte (negative)
     "RBFOX3", "SNAP25", "SYT1",          # neuron (negative)
-] + [f"GENE{i}" for i in range(38)]      # filler — 50 genes total
+] + [f"GENE{i}" for i in range(488)]     # filler — 500 genes total
 
 
 def make_synthetic(seed: int = 0, n_cells: int = 5000) -> ad.AnnData:
