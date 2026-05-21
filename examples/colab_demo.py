@@ -215,9 +215,9 @@ runner2 = IsolateRunner(
 )
 result2 = runner2.run()
 
-assert (
-    result2.isolated.n_obs == result.isolated.n_obs
-), f"Replay mismatch: {result2.isolated.n_obs} vs {result.isolated.n_obs}"
+assert result2.isolated.n_obs == result.isolated.n_obs, (
+    f"Replay mismatch: {result2.isolated.n_obs} vs {result.isolated.n_obs}"
+)
 print(f"✓ Replay deterministic: both runs isolated {result.isolated.n_obs} cells")
 
 # %% [markdown]
