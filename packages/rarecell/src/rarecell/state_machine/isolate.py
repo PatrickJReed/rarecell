@@ -10,7 +10,7 @@ from typing import Literal
 import anndata as ad
 
 from rarecell.core import annotate, clustering, evidence, ingest, io, markers, purify, qc
-from rarecell.errors import UnreviewedProfileError
+from rarecell.errors import IsolationAbortedError, UnreviewedProfileError
 from rarecell.logging import get_logger
 from rarecell.profile.schema import TargetCellProfile
 from rarecell.recommender.base import Recommendation, Recommender
@@ -106,9 +106,9 @@ class IsolateRunner:
     def _decide_for_gate(self, gate: int, recs: list[Recommendation]) -> dict[str, str]:
         decisions: dict[str, str] = {}
         if self.auto_policy == "from_decisions":
-            assert self.replay_decisions_path is not None, (
-                "auto_policy='from_decisions' requires replay_decisions_path"
-            )
+            assert (
+                self.replay_decisions_path is not None
+            ), "auto_policy='from_decisions' requires replay_decisions_path"
             for d in DecisionLog.iter_decisions(self.replay_decisions_path):
                 if d.gate == gate:
                     decisions[d.cluster_id] = d.user_decision
@@ -172,9 +172,41 @@ class IsolateRunner:
             cluster_key="leiden",
         )
 
+    def _s5_gate2(self, purified_adata: ad.AnnData) -> list[str]:
+        """Gate 2: per-sub-cluster decisions after surgical purify.
+
+        Returns the list of sub-cluster IDs (in ``purified_adata``'s leiden
+        labels) that the user/policy decided to keep.
+        """
+        table = evidence.score_evidence(purified_adata, self.profile, cluster_key="leiden")
+        recs = self.recommender.recommend(table)
+        user_decisions = self._decide_for_gate(2, recs)
+        self._log_decisions(2, recs, user_decisions)
+        return [cid for cid, d in user_decisions.items() if d == "keep"]
+
     def _select_isolated(self, kept_clusters: list[str]) -> ad.AnnData:
         mask = self.adata.obs["leiden"].astype(str).isin(set(kept_clusters))
         return self.adata[mask].copy()
+
+    def _s6_gate3(self, isolated: ad.AnnData, input_n_obs: int) -> None:
+        """Gate 3: final abundance abort policy.
+
+        If ``profile.auto_policy.gates.gate3_final == "abort_on_anomaly"`` and
+        the isolated fraction is outside ``expected_abundance`` widened by
+        ``max_abundance_deviation``, raise :class:`IsolationAbortedError`.
+        """
+        policy = self.profile.auto_policy.gates
+        if policy.gate3_final != "abort_on_anomaly":
+            return
+        frac = isolated.n_obs / max(input_n_obs, 1)
+        lo = self.profile.expected_abundance.min_fraction / policy.max_abundance_deviation
+        hi = self.profile.expected_abundance.max_fraction * policy.max_abundance_deviation
+        if not (lo <= frac <= hi):
+            raise IsolationAbortedError(
+                f"Gate 3 abort: isolated abundance {frac:.4f} is outside "
+                f"expected bounds [{lo:.4f}, {hi:.4f}] "
+                f"(max_abundance_deviation={policy.max_abundance_deviation})."
+            )
 
     # ── public entry point ─────────────────────────────────────────────
 
@@ -204,16 +236,23 @@ class IsolateRunner:
                 if purified is not None:
                     # purify returns the full AnnData containing non-suspect
                     # cells plus the cells that survived sub-cluster filtering
-                    # from suspect clusters. Treat suspect-cluster ids that
-                    # still have cells as additional keepers.
+                    # from suspect clusters. Gate 2 then runs the recommender
+                    # on the purified subset to decide which sub-clusters to
+                    # keep.
                     self.adata = purified
-                    surviving_ids = set(self.adata.obs["leiden"].astype(str).unique())
-                    extra = sorted(surviving_ids & set(suspect))
-                    kept.extend(c for c in extra if c not in kept)
+                    self.state = IsolateState.S5_GATE2
+                    self.logger.info("runner.state", state=self.state.name)
+                    sub_kept = self._s5_gate2(purified)
+                    kept = sorted(set(kept) | set(sub_kept))
 
             self.state = IsolateState.S6_FINAL
             self.logger.info("runner.state", state=self.state.name)
             isolated = self._select_isolated(kept)
+
+            # Gate 3: final abundance abort policy.
+            self.state = IsolateState.S6_GATE3
+            self.logger.info("runner.state", state=self.state.name)
+            self._s6_gate3(isolated, self._input_n_obs)
 
             self.state = IsolateState.S7_REPORT
             self.logger.info(
