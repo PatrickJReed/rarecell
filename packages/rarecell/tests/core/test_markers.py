@@ -68,3 +68,13 @@ def test_score_negative_panels_flags_contaminants():
     score_negative_panels(a, _profile(), use_raw=False)
     assert "is_contaminant" in a.obs
     assert a.obs["is_contaminant"][50:100].sum() > 30
+
+
+def test_score_panel_with_use_raw_true_but_no_raw():
+    """Regression: score_panel(use_raw=True) must not crash when adata.raw is None."""
+    a = _toy_adata_with_panels()
+    assert a.raw is None
+    # Default use_raw=True path:
+    score_panel(a, "pan_t", ["CD3D", "CD3E"], threshold_z=1.0)
+    assert "score_pan_t" in a.obs.columns
+    assert "pass_pan_t" in a.obs.columns

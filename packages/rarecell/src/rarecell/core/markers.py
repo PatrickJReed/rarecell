@@ -33,7 +33,7 @@ def score_panel(
         return
 
     sc.tl.score_genes(adata, gene_list=present, score_name=f"score_{name}",
-                      use_raw=use_raw)
+                      use_raw=use_raw and adata.raw is not None)
     if threshold_z is not None:
         s = adata.obs[f"score_{name}"]
         adata.obs[f"pass_{name}"] = (s > s.mean() + threshold_z * s.std())
