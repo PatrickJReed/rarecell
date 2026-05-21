@@ -30,10 +30,12 @@ The fastest way to see rarecell in action is the **Colab demo**:
 
 It answers the question *"can I isolate a disease-associated cell
 population from my dataset using markers from a specific paper?"* — on a
-real schizophrenia DLPFC sample from brainSCOPE, with the marker panel
-anchored on Ling et al., *Nature* 2024
+real schizophrenia DLPFC sample from brainSCOPE, with Claude drafting
+the marker panel directly from Ling et al., *Nature* 2024
 ([PMID:38448582](https://pubmed.ncbi.nlm.nih.gov/38448582/)). End-to-end
-in ~10 minutes; no API keys required. Source: `examples/colab_demo.ipynb`.
+in ~10 minutes. Requires an Anthropic API key (≈$0.05 for the single
+drafting call); the demo's setup cell handles Colab Secrets / env /
+masked prompt automatically. Source: `examples/colab_demo.ipynb`.
 
 To develop locally:
 
