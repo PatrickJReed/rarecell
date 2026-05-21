@@ -16,8 +16,12 @@ ignore = ["E501"]  # line length handled by formatter
 
 [tool.pytest.ini_options]
 pythonpath = ["."]
-testpaths = ["tests", "packages/rarecell/tests"]
+testpaths = ["tests", "packages/rarecell/tests", "packages/rarecell-mcp-knowledge/tests"]
 norecursedirs = [".venv", ".ruff_cache"]
+# importlib mode avoids basename-collision errors between same-named test files
+# across packages (e.g., packages/rarecell/tests/test_errors.py and
+# packages/rarecell-mcp-knowledge/tests/test_errors.py).
+addopts = "--import-mode=importlib"
 markers = [
   "integration: end-to-end tests that fetch external data",
 ]

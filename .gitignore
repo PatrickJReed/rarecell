@@ -17,5 +17,7 @@ build/
 runs/
 data/
 *.h5ad
-!tests/fixtures/data/*.h5ad
+!**/tests/*/data/
+!**/tests/*/data/*.h5ad
+!**/tests/*/data/*.tsv
 .pybiomart.sqlite

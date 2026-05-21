@@ -15,6 +15,9 @@ Packages live under `packages/`:
 
 - `packages/rarecell/` — the core library (preprocessing, integration,
   clustering, rare-cell scoring, marker discovery).
+- `packages/rarecell-mcp-knowledge/` — FastMCP server for literature + marker
+  retrieval (CellMarker, PanglaoDB, MSigDB, Enrichr, Europe PMC). Consumable
+  from any MCP client.
 
 Design docs and implementation plans live under `docs/`.
 

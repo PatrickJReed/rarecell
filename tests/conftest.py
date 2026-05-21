@@ -1,5 +1,6 @@
 import pytest
-from fixtures.make_synthetic import make_synthetic
+
+from tests.fixtures.make_synthetic import make_synthetic
 
 
 @pytest.fixture
