@@ -53,8 +53,13 @@
 # ## 1. Install
 
 # %%
-# !pip install -q "git+https://github.com/PatrickJReed/rarecell.git#subdirectory=packages/rarecell-mcp-knowledge"
-# !pip install -q "git+https://github.com/PatrickJReed/rarecell.git#subdirectory=packages/rarecell[agent]"
+# rarecell is a uv workspace — pip-install each package via PEP 508
+# direct reference (the [agent] extra has to go on the package name,
+# not inside the URL fragment, hence the "rarecell[agent] @ git+..."
+# form). Install rarecell-mcp-knowledge first so rarecell[agent] can
+# resolve it without hitting PyPI.
+# !pip install -q "rarecell-mcp-knowledge @ git+https://github.com/PatrickJReed/rarecell.git#subdirectory=packages/rarecell-mcp-knowledge"
+# !pip install -q "rarecell[agent] @ git+https://github.com/PatrickJReed/rarecell.git#subdirectory=packages/rarecell"
 # !pip install -q remotezip
 
 # %% [markdown]
