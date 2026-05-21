@@ -106,9 +106,9 @@ class IsolateRunner:
     def _decide_for_gate(self, gate: int, recs: list[Recommendation]) -> dict[str, str]:
         decisions: dict[str, str] = {}
         if self.auto_policy == "from_decisions":
-            assert self.replay_decisions_path is not None, (
-                "auto_policy='from_decisions' requires replay_decisions_path"
-            )
+            assert (
+                self.replay_decisions_path is not None
+            ), "auto_policy='from_decisions' requires replay_decisions_path"
             for d in DecisionLog.iter_decisions(self.replay_decisions_path):
                 if d.gate == gate:
                     decisions[d.cluster_id] = d.user_decision
@@ -175,14 +175,23 @@ class IsolateRunner:
     def _s5_gate2(self, purified_adata: ad.AnnData) -> list[str]:
         """Gate 2: per-sub-cluster decisions after surgical purify.
 
-        Returns the list of sub-cluster IDs (in ``purified_adata``'s leiden
-        labels) that the user/policy decided to keep.
+        A sub-cluster's decision means:
+          - "keep"   → keep
+          - "drop"   → drop
+          - "purify" → keep (we already surgically purified; no recursion)
+          - "abort"  → bubble up via RuntimeError
+
+        Returns the kept sub-cluster IDs in ``purified_adata``'s leiden labels.
         """
         table = evidence.score_evidence(purified_adata, self.profile, cluster_key="leiden")
         recs = self.recommender.recommend(table)
         user_decisions = self._decide_for_gate(2, recs)
         self._log_decisions(2, recs, user_decisions)
-        return [cid for cid, d in user_decisions.items() if d == "keep"]
+        if any(d == "abort" for d in user_decisions.values()):
+            raise RuntimeError(
+                f"Gate 2 produced an 'abort' decision under auto_policy={self.auto_policy!r}."
+            )
+        return [cid for cid, d in user_decisions.items() if d in ("keep", "purify")]
 
     def _select_isolated(self, kept_clusters: list[str]) -> ad.AnnData:
         mask = self.adata.obs["leiden"].astype(str).isin(set(kept_clusters))
