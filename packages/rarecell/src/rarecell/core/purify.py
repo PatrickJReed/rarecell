@@ -162,7 +162,7 @@ def subcluster_and_purify(
         return adata
     if cluster_key not in adata.obs.columns:
         raise ValueError(
-            f"cluster_key '{cluster_key}' not in adata.obs. " "Run clustering before purification."
+            f"cluster_key '{cluster_key}' not in adata.obs. Run clustering before purification."
         )
 
     suspect_ids = {str(c) for c in suspect_clusters}

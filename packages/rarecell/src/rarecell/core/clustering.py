@@ -740,7 +740,7 @@ def finalize_taxonomy_cluster(
     params = adata.uns.get(f"_taxonomy_params_{stage}")
     if params is None:
         raise ValueError(
-            f"No taxonomy params found for stage '{stage}'. " "Run taxonomy_cluster() first."
+            f"No taxonomy params found for stage '{stage}'. Run taxonomy_cluster() first."
         )
 
     leiden_key = params["leiden_key"]

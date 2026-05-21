@@ -310,7 +310,7 @@ def score_evidence(
     """
     if cluster_key not in adata.obs.columns:
         raise ValueError(
-            f"cluster_key '{cluster_key}' not found in adata.obs. " "Run clustering first."
+            f"cluster_key '{cluster_key}' not found in adata.obs. Run clustering first."
         )
 
     clusters = _sorted_clusters(adata.obs[cluster_key])
@@ -793,7 +793,7 @@ def plot_biccn_probability_table(
         return fig
 
     rules = _filtered_rules(profile)
-    clusters = sorted(trinaries.keys(), key=lambda x: (int(x) if str(x).isdigit() else x))
+    clusters = sorted(trinaries.keys(), key=lambda x: int(x) if str(x).isdigit() else x)
     cell_types = list(rules.keys())
 
     prob_matrix = np.zeros((len(clusters), len(cell_types)))

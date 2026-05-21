@@ -33,7 +33,7 @@ class BasicRecommender(Recommender):
             elif best_pass < 0.1 or contam > 0.4:
                 rec, conf = "drop", 0.85
                 reasoning = (
-                    f"Weak positive ({best_pass:.2f}) " f"or heavy contamination ({contam:.2f})."
+                    f"Weak positive ({best_pass:.2f}) or heavy contamination ({contam:.2f})."
                 )
             else:
                 rec, conf = "purify", 0.55

@@ -158,7 +158,7 @@ class IsolateRunner:
         purify_ids = [cid for cid, d in user_decisions.items() if d == "purify"]
         if any(d == "abort" for d in user_decisions.values()):
             raise RuntimeError(
-                "Gate 1 produced an 'abort' decision under auto_policy=" f"{self.auto_policy!r}."
+                f"Gate 1 produced an 'abort' decision under auto_policy={self.auto_policy!r}."
             )
         return kept, purify_ids
 
