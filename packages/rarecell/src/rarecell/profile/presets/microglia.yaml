@@ -1,0 +1,63 @@
+schema_version: "1.0"
+profile_id: "preset-microglia-v0.1"
+name: "Microglia"
+description: "Microglia isolation from brain or spinal cord snRNA-seq"
+target_lineage: "myeloid"
+tissue: ["brain", "spinal_cord"]
+expected_abundance:
+  min_fraction: 0.02
+  max_fraction: 0.15
+  notes: "Microglia 5-12% of nuclei in human brain snRNA-seq"
+
+positive_markers:
+  pan_microglia:
+    genes: [CX3CR1, P2RY12, TMEM119, AIF1, CSF1R, ITGAM]
+    threshold_z: 1.0
+    citations:
+      - {source_id: "panglaodb:Microglia", source: "panglaodb"}
+
+negative_markers:
+  neuron:
+    genes: [RBFOX3, SYT1, SNAP25]
+    exclusion_threshold_z: 1.5
+  astrocyte:
+    genes: [AQP4, GFAP, SLC1A2]
+    exclusion_threshold_z: 1.5
+  oligodendrocyte:
+    genes: [MBP, MOG, PLP1]
+    exclusion_threshold_z: 1.5
+  peripheral_monocyte:
+    genes: [CD14, LYZ, CCR2]
+    exclusion_threshold_z: 1.5
+
+reference_labels:
+  celltypist_models: []
+
+biccn_rules:
+  enabled: true
+  class_filter: ["MGL"]
+  subclass_filter: ["MGL", "MONO", "MAC", "TCELL", "BCELL", "NK"]
+
+qc:
+  min_genes_per_cell: 200
+  max_pct_mt: 10
+  max_genes_per_cell: 10000
+  min_cells_per_gene: 3
+
+purify:
+  enabled: true
+  high_resolution: 2.0
+  min_cluster_purity: 0.7
+
+batch_correction:
+  in_dataset: "harmony"
+  batch_key: "sample_id"
+
+auto_policy:
+  gates:
+    gate1_cluster_decisions: "recommendation"
+    gate2_purify_decisions: "recommendation"
+    gate3_final: "accept"
+
+frozen: false
+human_reviewed: false

@@ -229,7 +229,7 @@ __version__ = "0.1.0.dev0"
 
 - [ ] **Step 7: Sync the workspace**
 
-Run: `uv sync --all-extras --dev`
+Run: `uv sync --all-packages --all-extras --dev`
 Expected: dependencies resolve and install, no errors.
 
 - [ ] **Step 8: Commit**
@@ -2941,7 +2941,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v3
-      - run: uv sync --all-extras --dev
+      - run: uv sync --all-packages --all-extras --dev
       - run: uv run ruff check .
       - run: uv run ruff format --check .
       - run: uv run mypy packages/rarecell/src --ignore-missing-imports
@@ -2963,7 +2963,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v3
-      - run: uv sync --all-extras --dev --python ${{ matrix.python-version }}
+      - run: uv sync --all-packages --all-extras --dev --python ${{ matrix.python-version }}
       - run: uv run pytest packages/rarecell/tests tests/fixtures tests/integration/test_replay_determinism.py tests/integration/test_synthetic_end_to_end.py -v
   integration-pbmc:
     runs-on: ubuntu-latest
@@ -2971,7 +2971,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v3
-      - run: uv sync --all-extras --dev
+      - run: uv sync --all-packages --all-extras --dev
       - run: uv run pytest tests/integration/test_pbmc3k.py -v -m integration
 ```
 
