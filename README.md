@@ -29,3 +29,19 @@ uv run pytest
 ```
 
 See `CONTRIBUTING.md` for the full development workflow.
+
+## Advisor agent (Plan 3 — `rarecell.agent`)
+
+The advisor experience lives in `rarecell.agent` and is gated by the
+`[agent]` optional extra:
+
+```bash
+pip install 'rarecell[agent]'
+```
+
+This installs the Anthropic SDK and `rarecell-mcp-knowledge`. The agent
+provides `ClaudeRecommender` (LLM-backed swap-in for the heuristic
+`BasicRecommender`) and a profile drafting flow that turns natural-language
+prompts into reviewable `TargetCellProfile` YAMLs.
+
+Without the extra, `rarecell.core` works unchanged with `BasicRecommender`.

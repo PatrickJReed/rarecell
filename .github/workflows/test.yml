@@ -10,7 +10,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v3
       - run: uv sync --all-packages --all-extras --dev --python ${{ matrix.python-version }}
-      - run: uv run pytest packages/rarecell/tests packages/rarecell-mcp-knowledge/tests tests/fixtures tests/integration/test_replay_determinism.py tests/integration/test_synthetic_end_to_end.py -v
+      - run: uv run pytest packages/rarecell/tests packages/rarecell-mcp-knowledge/tests tests/fixtures tests/integration/test_replay_determinism.py tests/integration/test_synthetic_end_to_end.py tests/integration/test_claude_recommender_e2e.py -v
   integration-pbmc:
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request'
