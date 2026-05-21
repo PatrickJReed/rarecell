@@ -4,15 +4,7 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
-# Add fixtures directory to path for direct import
-_repo_root = Path(__file__).resolve().parents[4]
-_fixtures_path = _repo_root / "tests" / "fixtures"
-if str(_fixtures_path) not in sys.path:
-    sys.path.insert(0, str(_fixtures_path))
-
-from make_synthetic import make_synthetic  # noqa: E402, I001
-
-from rarecell.profile.schema import (  # noqa: E402
+from rarecell.profile.schema import (
     BatchCorrection,
     BICCNRules,
     Citation,
@@ -23,8 +15,15 @@ from rarecell.profile.schema import (  # noqa: E402
     ReferenceLabels,
     TargetCellProfile,
 )
-from rarecell.recommender.basic import BasicRecommender  # noqa: E402
-from rarecell.state_machine.isolate import IsolateRunner  # noqa: E402
+from rarecell.recommender.basic import BasicRecommender
+from rarecell.state_machine.isolate import IsolateRunner
+
+# Make top-level tests/fixtures importable
+_fixtures_path = Path(__file__).resolve().parents[4] / "tests" / "fixtures"
+if str(_fixtures_path) not in sys.path:
+    sys.path.insert(0, str(_fixtures_path))
+
+from make_synthetic import make_synthetic  # noqa: E402
 
 
 def _profile_for_synthetic() -> TargetCellProfile:
