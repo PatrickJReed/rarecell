@@ -229,8 +229,11 @@ def build_consensus_labels(
     celltypist_key: str,
     original_key: str | None = None,
     output_key: str | None = None,
-) -> str:
+) -> None:
     """Build a unified consensus label column from CellTypist + optional originals.
+
+    Writes a new column to ``adata.obs`` as a pandas ``Categorical``.
+    Unknown / empty values become the string ``"Unknown"``.
 
     Parameters
     ----------
@@ -244,13 +247,6 @@ def build_consensus_labels(
         column exists, original labels override CellTypist where non-null.
     output_key
         Name for the new obs column. If None, auto-generated from inputs.
-
-    Returns
-    -------
-    str
-        Name of the created obs column. The column is also written into
-        ``adata.obs`` as a pandas ``Categorical``. Unknown / empty values
-        become the string ``"Unknown"``.
     """
     if celltypist_key not in adata.obs.columns:
         raise ValueError(
@@ -292,5 +288,3 @@ def build_consensus_labels(
         f"  Created '{output_key}': {n_labeled:,} labeled, "
         f"{n_unknown:,} Unknown, {n_categories} categories"
     )
-
-    return output_key
