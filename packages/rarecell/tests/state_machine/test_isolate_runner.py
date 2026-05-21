@@ -1,7 +1,6 @@
 """Tests for the IsolateRunner state machine driver."""
 from __future__ import annotations
 
-import sys
 from pathlib import Path
 
 from rarecell.profile.schema import (
@@ -17,13 +16,7 @@ from rarecell.profile.schema import (
 )
 from rarecell.recommender.basic import BasicRecommender
 from rarecell.state_machine.isolate import IsolateRunner
-
-# Make top-level tests/fixtures importable
-_fixtures_path = Path(__file__).resolve().parents[4] / "tests" / "fixtures"
-if str(_fixtures_path) not in sys.path:
-    sys.path.insert(0, str(_fixtures_path))
-
-from make_synthetic import make_synthetic  # noqa: E402
+from tests.fixtures.make_synthetic import make_synthetic
 
 
 def _profile_for_synthetic() -> TargetCellProfile:
