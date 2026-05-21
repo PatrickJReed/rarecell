@@ -9,7 +9,7 @@ try:
     from rarecell.agent.draft import draft_profile_from_prompt
 except ImportError as e:
     raise ImportError(
-        "Profile drafting requires the [agent] extra. " "Install with: pip install rarecell[agent]"
+        "Profile drafting requires the [agent] extra. Install with: pip install rarecell[agent]"
     ) from e
 
 __all__ = ["draft_profile_from_prompt"]
