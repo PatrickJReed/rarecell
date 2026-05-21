@@ -18,3 +18,4 @@ runs/
 data/
 *.h5ad
 !tests/fixtures/data/*.h5ad
+.pybiomart.sqlite
