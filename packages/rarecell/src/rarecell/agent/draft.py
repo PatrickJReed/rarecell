@@ -28,6 +28,7 @@ def _build_drafting_prompt(
     user_prompt: str,
     literature_hits: list,
     marker_hits: list,
+    anchor_hit: Any | None = None,
 ) -> str:
     lit_lines = [
         f"- {h.citation.source_id}: {h.title} — {h.snippet[:150]}" for h in literature_hits[:5]
@@ -35,8 +36,15 @@ def _build_drafting_prompt(
     marker_lines = [
         f"- {h.title}: {', '.join(h.payload.get('genes', [])[:10])}" for h in marker_hits[:5]
     ]
+    anchor_section = ""
+    if anchor_hit is not None:
+        anchor_section = (
+            "Anchor paper (primary grounding):\n"
+            f"- {anchor_hit.citation.source_id}: {anchor_hit.title}\n"
+            f"  {anchor_hit.snippet[:600]}\n\n"
+        )
     return (
-        f"User prompt:\n{user_prompt}\n\n"
+        anchor_section + f"User prompt:\n{user_prompt}\n\n"
         "Literature hits:\n" + "\n".join(lit_lines) + "\n\n"
         "Marker DB hits:\n" + "\n".join(marker_lines) + "\n\n"
         "Draft a TargetCellProfile as a single ```json``` block matching this shape:\n"
@@ -60,16 +68,41 @@ def draft_profile_from_prompt(
     prompt: str,
     client: Any,
     session: KnowledgeSession,
+    anchor_paper: str | None = None,
 ) -> TargetCellProfile:
     """Draft a TargetCellProfile from a natural-language prompt.
 
     Retrieves literature + marker hits, asks Claude to compose a profile,
     and returns the parsed (un-frozen) TargetCellProfile.
 
+    Args:
+        prompt: Natural-language description of the target cell type.
+        client: Claude client exposing ``messages_create``.
+        session: Knowledge session backing literature + marker retrieval.
+        anchor_paper: Optional PMID or DOI to anchor the draft against. When
+            provided, the function fetches that paper's abstract via
+            ``LiteratureRetriever.fetch_abstract`` and prepends it to the
+            drafting prompt as the primary grounding source. Generic
+            literature + marker searches still run and supplement the
+            anchor. If the anchor fetch fails (e.g., unknown PMID), the
+            failure is logged and drafting proceeds without the anchor.
+
     Raises ValueError if the model's response doesn't parse.
     """
     lit_retriever = LiteratureRetriever(session=session)
     marker_retriever = MarkersDBRetriever(session=session)
+
+    anchor_hit: Any | None = None
+    if anchor_paper is not None:
+        try:
+            anchor_hit = lit_retriever.fetch_abstract(anchor_paper)
+        except Exception as e:
+            _log.warning(
+                "draft.anchor_fetch_failed",
+                anchor_paper=anchor_paper,
+                error=str(e),
+            )
+            anchor_hit = None
 
     try:
         literature_hits = lit_retriever.search(prompt, page_size=5)
@@ -82,7 +115,12 @@ def draft_profile_from_prompt(
         _log.warning("draft.marker_search_failed", error=str(e))
         marker_hits = []
 
-    user_msg = _build_drafting_prompt(prompt, literature_hits, marker_hits)
+    user_msg = _build_drafting_prompt(
+        prompt,
+        literature_hits,
+        marker_hits,
+        anchor_hit=anchor_hit,
+    )
     resp = client.messages_create(messages=[{"role": "user", "content": user_msg}])
     text_blocks = [b for b in resp.get("content", []) if b.get("type") == "text"]
     if not text_blocks:
