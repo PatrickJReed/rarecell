@@ -24,6 +24,15 @@ Packages live under `packages/`:
 
 ## Getting started
 
+The fastest way to see rarecell in action is the **Colab demo**:
+
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/PatrickJReed/rarecell/blob/main/examples/colab_demo.ipynb)
+
+It runs the full pipeline on 10x PBMC 3k — no API keys required.
+Source: `examples/colab_demo.ipynb`.
+
+To develop locally:
+
 ```bash
 uv sync --all-packages --all-extras --dev
 uv run pytest
