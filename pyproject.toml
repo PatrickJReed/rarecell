@@ -18,6 +18,9 @@ ignore = ["E501"]  # line length handled by formatter
 pythonpath = ["."]
 testpaths = ["tests", "packages/rarecell/tests"]
 norecursedirs = [".venv", ".ruff_cache"]
+markers = [
+  "integration: end-to-end tests that fetch external data",
+]
 
 [tool.mypy]
 python_version = "3.11"
