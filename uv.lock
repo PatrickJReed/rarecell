@@ -2806,6 +2806,7 @@ dev = [
     { name = "pre-commit" },
     { name = "pytest" },
     { name = "pytest-cov" },
+    { name = "respx" },
     { name = "ruff" },
 ]
 
@@ -2831,6 +2832,7 @@ requires-dist = [
     { name = "pytest-cov", marker = "extra == 'dev'" },
     { name = "pyyaml", specifier = ">=6.0" },
     { name = "rarecell-mcp-knowledge", marker = "extra == 'agent'", editable = "packages/rarecell-mcp-knowledge" },
+    { name = "respx", marker = "extra == 'dev'", specifier = ">=0.23" },
     { name = "ruff", marker = "extra == 'dev'" },
     { name = "scanpy", specifier = ">=1.10" },
     { name = "scikit-learn", specifier = ">=1.3" },
