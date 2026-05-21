@@ -31,7 +31,7 @@ class QueryCache:
     def get(self, backend: str, query_hash: str) -> Any | None:
         with sqlite3.connect(self.path) as conn:
             row = conn.execute(
-                "SELECT payload, expires_at FROM cache " "WHERE backend = ? AND query_hash = ?",
+                "SELECT payload, expires_at FROM cache WHERE backend = ? AND query_hash = ?",
                 (backend, query_hash),
             ).fetchone()
         if row is None:

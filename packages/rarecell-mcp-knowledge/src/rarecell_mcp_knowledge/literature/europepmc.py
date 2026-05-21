@@ -68,7 +68,7 @@ class EuropePMCClient:
         if tissue:
             q = f"({q}) AND {tissue}"
         if year_range:
-            q = f"({q}) AND (FIRST_PDATE:[{year_range[0]}-01-01 TO " f"{year_range[1]}-12-31])"
+            q = f"({q}) AND (FIRST_PDATE:[{year_range[0]}-01-01 TO {year_range[1]}-12-31])"
         data = self._get(
             "search",
             {
