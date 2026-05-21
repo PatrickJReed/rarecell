@@ -1,0 +1,21 @@
+species	tissue_class	cell_name	marker	pmid
+Human	Blood	T cell	CD3D	18187658
+Human	Blood	T cell	CD3E	18187658
+Human	Blood	T cell	CD3G	18187658
+Human	Blood	T cell	TRAC	18187658
+Human	Blood	B cell	CD19	16410789
+Human	Blood	B cell	MS4A1	16410789
+Human	Blood	B cell	CD79A	16410789
+Human	Blood	NK cell	NCAM1	17139049
+Human	Blood	NK cell	NKG7	17139049
+Human	Blood	NK cell	GNLY	17139049
+Human	Brain	Microglia	CX3CR1	29483971
+Human	Brain	Microglia	P2RY12	29483971
+Human	Brain	Microglia	TMEM119	29483971
+Human	Brain	Astrocyte	GFAP	29483971
+Human	Brain	Astrocyte	AQP4	29483971
+Human	Brain	Neuron	RBFOX3	29483971
+Human	Brain	Neuron	SYT1	29483971
+Human	Blood	Monocyte	CD14	16410789
+Human	Blood	Monocyte	LYZ	16410789
+Human	Blood	Dendritic cell	CLEC9A	24382886
