@@ -18,7 +18,7 @@ from pydantic import BaseModel, Field
 
 
 class Decision(BaseModel):
-    timestamp: datetime = Field(default_factory=datetime.utcnow)
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(UTC))
     gate: Literal[1, 2, 3]
     cluster_id: str
     recommendation: Literal["keep", "drop", "purify", "accept", "abort"]
