@@ -44,7 +44,7 @@ def make_synthetic(seed: int = 0, n_cells: int = 5000) -> ad.AnnData:
     ):  # T cell (the rare one)
         rows = np.where(labels == ci)[0]
         for j in marker_idxs:
-            X[rows, j] += rng.poisson(15, size=rows.shape[0])
+            X[rows, j] += rng.poisson(70, size=rows.shape[0])
 
     n_per_sample = n_cells // 4
     sample_id = np.repeat([f"s{i}" for i in range(4)], n_per_sample)
