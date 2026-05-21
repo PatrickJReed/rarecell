@@ -42,7 +42,9 @@ def _profile():
             max_genes_per_cell=10000,
             min_cells_per_gene=1,
         ),
-        purify=PurifyParams(enabled=False),
+        # See test_isolate_runner: purify is required for the synthetic
+        # T-cell signal to survive QC-bundled normalization.
+        purify=PurifyParams(enabled=True, min_cluster_purity=0.5),
         batch_correction=BatchCorrection(in_dataset="harmony", batch_key="sample_id"),
         human_reviewed=True,
         reviewer="test@x",

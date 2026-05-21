@@ -81,10 +81,19 @@ class IsolateRunner:
         ingest.validate_counts(self.adata)
 
     def _s2_qc(self) -> None:
+        import scanpy as sc
+
         self.adata = qc.run_qc(self.adata, self.profile.qc)
         self.adata = qc.run_scrublet(
             self.adata, batch_key=self.profile.batch_correction.batch_key
         )
+        # Bundle normalization into QC so downstream stages (clustering,
+        # marker scoring) always see log1p(CP10K) in .X. qc.run_qc already
+        # stashes raw counts to layers["counts"]; defensively check.
+        if "counts" not in self.adata.layers:
+            self.adata.layers["counts"] = self.adata.X.copy()
+        sc.pp.normalize_total(self.adata, target_sum=1e4)
+        sc.pp.log1p(self.adata)
 
     def _s3_cluster(self) -> None:
         markers.score_profile_markers(self.adata, self.profile, use_raw=False)

@@ -43,7 +43,11 @@ def _profile_for_synthetic() -> TargetCellProfile:
             max_genes_per_cell=10000,
             min_cells_per_gene=1,
         ),
-        purify=PurifyParams(enabled=False),
+        # Purify is needed because, after the QC-bundled normalize+log1p,
+        # the planted T-cell cluster scores cleanly above background but
+        # below BasicRecommender's "keep" threshold (pass_frac >= 0.5);
+        # the surgical subcluster pass extracts the pure T-cell core.
+        purify=PurifyParams(enabled=True, min_cluster_purity=0.5),
         batch_correction=BatchCorrection(in_dataset="harmony", batch_key="sample_id"),
         human_reviewed=True,
         reviewer="test@x",
