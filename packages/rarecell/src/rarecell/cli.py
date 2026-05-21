@@ -156,5 +156,67 @@ def review(
     typer.echo(f"  Status:    {manifest['status']}")
 
 
+@app.command("validate-profile")
+def validate_profile(
+    input: Annotated[Path, typer.Option("--input", help="Path to input AnnData (.h5ad)")],
+    profile_path: Annotated[
+        Path, typer.Option("--profile", help="Path to profile YAML (frozen or not)")
+    ],
+):
+    """Pre-flight check: does the profile's marker panel fit this dataset?
+
+    Reports per-panel gene overlap (%), mean per-gene prevalence, and panel
+    score statistics. Exits 0 if all positive panels have >=50% gene overlap;
+    exits 1 if any panel is below the threshold.
+    """
+    from rarecell.validate import validate_profile_against_adata
+
+    typer.echo(f"Loading profile from {profile_path}")
+    profile = TargetCellProfile.from_yaml_path(profile_path)
+    typer.echo(f"Loading AnnData from {input}")
+    adata = ad.read_h5ad(input)
+
+    report = validate_profile_against_adata(adata, profile)
+
+    typer.echo("\n=== Dataset ===")
+    ds = report["dataset"]
+    typer.echo(f"  n_obs={ds['n_obs']}  n_vars={ds['n_vars']}  samples={ds['samples']}")
+    ea = report["expected_abundance"]
+    typer.echo(f"  Expected abundance: [{ea['min_fraction']:.4f}, {ea['max_fraction']:.4f}]")
+
+    typer.echo("\n=== Positive marker panels ===")
+    for name, p in report["positive_markers"].items():
+        status = "OK " if p["gene_overlap_fraction"] >= 0.5 else "LOW"
+        typer.echo(
+            f"  [{status}] {name}: "
+            f"{p['gene_overlap_count']}/{p['gene_overlap_total']} genes found "
+            f"({p['gene_overlap_fraction']:.0%}), "
+            f"mean prevalence={p['mean_prevalence']:.2%}, "
+            f"score={p['score_mean']:+.3f}±{p['score_std']:.3f}"
+        )
+        if p["genes_missing"]:
+            typer.echo(f"        missing: {', '.join(p['genes_missing'])}")
+
+    if report["negative_markers"]:
+        typer.echo("\n=== Negative marker panels ===")
+        for name, p in report["negative_markers"].items():
+            typer.echo(
+                f"  {name}: "
+                f"{p['gene_overlap_count']}/{p['gene_overlap_total']} genes found "
+                f"({p['gene_overlap_fraction']:.0%}), "
+                f"mean prevalence={p['mean_prevalence']:.2%}"
+            )
+
+    typer.echo(f"\nOverall: {report['overall_status'].upper()}")
+
+    if report["overall_status"] != "pass":
+        typer.echo(
+            "\nAt least one positive panel has <50% gene overlap with the dataset. "
+            "Likely causes: gene-name format mismatch (Ensembl vs symbol), "
+            "cross-species names, or markers genuinely absent from this tissue."
+        )
+        raise typer.Exit(code=1)
+
+
 if __name__ == "__main__":
     app()
