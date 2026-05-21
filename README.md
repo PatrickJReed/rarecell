@@ -28,8 +28,12 @@ The fastest way to see rarecell in action is the **Colab demo**:
 
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/PatrickJReed/rarecell/blob/main/examples/colab_demo.ipynb)
 
-It runs the full pipeline on 10x PBMC 3k — no API keys required.
-Source: `examples/colab_demo.ipynb`.
+It answers the question *"can I isolate a disease-associated cell
+population from my dataset using markers from a specific paper?"* — on a
+real schizophrenia DLPFC sample from brainSCOPE, with the marker panel
+anchored on Ling et al., *Nature* 2024
+([PMID:38448582](https://pubmed.ncbi.nlm.nih.gov/38448582/)). End-to-end
+in ~10 minutes; no API keys required. Source: `examples/colab_demo.ipynb`.
 
 To develop locally:
 
