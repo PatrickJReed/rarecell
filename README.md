@@ -22,8 +22,6 @@ Packages live under `packages/`:
   `draft | validate | isolate | inspect` from Claude Desktop / Claude
   Code / Cursor.
 
-Design docs and implementation plans live under `docs/`.
-
 ## Getting started
 
 ```bash
@@ -33,7 +31,7 @@ uv run pytest
 
 See `CONTRIBUTING.md` for the full development workflow.
 
-## Advisor agent (Plan 3 — `rarecell.agent`)
+## Advisor agent
 
 The advisor experience lives in `rarecell.agent` and is gated by the
 `[agent]` optional extra:

@@ -485,8 +485,8 @@ def select_clusters(table: pd.DataFrame, recommendation: str) -> list[str]:
 #
 # These return matplotlib Figures (no PDF saves). Helpers that need
 # als_utils-internal state (resolution scan dict, specific obs columns) are
-# stubbed for now and will be ported in Plan 4 alongside the Jupyter widget
-# work — the public API is retained so callers compile.
+# stubbed for now and will be ported alongside the Jupyter widget work —
+# the public API is retained so callers compile.
 
 
 def plot_stage_evidence(
@@ -836,10 +836,10 @@ def plot_biccn_probability_table(
 
 
 def plot_resolution_scan(adata: ad.AnnData, cluster_key: str = "leiden") -> Figure:
-    """TODO: ported in Plan 4 alongside Jupyter widget work.
+    """Placeholder — will consume the resolution-scan results from clustering.
 
-    Expected to consume the resolution scan results from clustering. Returns
-    an empty placeholder Figure for now.
+    Returns an empty placeholder Figure for now; the full implementation lands
+    alongside the Jupyter widget work in a future release.
     """
     import matplotlib.pyplot as plt
 
@@ -847,7 +847,7 @@ def plot_resolution_scan(adata: ad.AnnData, cluster_key: str = "leiden") -> Figu
     ax.text(
         0.5,
         0.5,
-        "plot_resolution_scan — pending (Plan 4)",
+        "plot_resolution_scan — not yet implemented",
         ha="center",
         va="center",
         transform=ax.transAxes,
@@ -860,14 +860,14 @@ def plot_resolution_umap_comparison(
     adata: ad.AnnData,
     cluster_key: str = "leiden",
 ) -> Figure:
-    """TODO: ported in Plan 4 alongside Jupyter widget work."""
+    """Placeholder — see plot_resolution_scan."""
     import matplotlib.pyplot as plt
 
     fig, ax = plt.subplots(figsize=(6, 4))
     ax.text(
         0.5,
         0.5,
-        "plot_resolution_umap_comparison — pending (Plan 4)",
+        "plot_resolution_umap_comparison — not yet implemented",
         ha="center",
         va="center",
         transform=ax.transAxes,
