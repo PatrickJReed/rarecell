@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Literal
 
@@ -12,7 +13,7 @@ from rarecell.errors import UnreviewedProfileError
 from rarecell.logging import get_logger
 from rarecell.profile.schema import TargetCellProfile
 from rarecell.recommender.base import Recommendation, Recommender
-from rarecell.report import Decision, DecisionLog
+from rarecell.report import Decision, DecisionLog, write_isolation_report
 from rarecell.state_machine.states import IsolateState
 
 AutoPolicyName = Literal[
@@ -67,6 +68,12 @@ class IsolateRunner:
         self.log = DecisionLog(self.out_dir / "decisions.jsonl")
         self.state = IsolateState.S0_LOAD
         self.logger = get_logger("rarecell.runner")
+        # Capture input summary before any QC mutation.
+        self._input_n_obs = adata.n_obs
+        self._input_n_vars = adata.n_vars
+        self._input_sample_ids = sorted(
+            set(map(str, adata.obs.get("sample_id", ["_"])))
+        )
 
     # ── pipeline stages ────────────────────────────────────────────────
 
@@ -175,6 +182,7 @@ class IsolateRunner:
     # ── public entry point ─────────────────────────────────────────────
 
     def run(self) -> IsolateResult:
+        started_at = datetime.now(UTC)
         try:
             self.state = IsolateState.S1_INGEST
             self.logger.info("runner.state", state=self.state.name)
@@ -220,6 +228,17 @@ class IsolateRunner:
                 kept_clusters=kept,
             )
             io.save_h5ad(isolated, self.out_dir / "isolated.h5ad")
+
+            write_isolation_report(
+                out_dir=self.out_dir,
+                profile=self.profile,
+                input_n_obs=self._input_n_obs,
+                input_n_vars=self._input_n_vars,
+                input_sample_ids=self._input_sample_ids,
+                isolated=isolated,
+                started_at=started_at,
+                decisions_path=self.log.path,
+            )
 
             return IsolateResult(
                 isolated=isolated,
