@@ -125,28 +125,6 @@ def _stringify_dict_keys(d: dict) -> dict:
     return out
 
 
-def _sanitize_uns_for_h5ad(adata: ad.AnnData) -> None:
-    """Sanitize .uns entries that h5ad/h5py cannot serialize.
-
-    Enrichr results (dict of DataFrames) and other nested structures may
-    contain object-dtype columns (e.g. 'Old P-value' from GSEApy) that
-    h5py cannot implicitly convert. Convert such columns to strings.
-    Also recursively converts integer dict keys to strings (h5ad requires
-    all mapping keys to be strings).
-
-    Parameters
-    ----------
-    adata : ad.AnnData
-        The AnnData object to sanitize (modified in place).
-    """
-    for key in list(adata.uns.keys()):
-        val = adata.uns[key]
-        if isinstance(val, pd.DataFrame):
-            _sanitize_df_columns(val)
-        elif isinstance(val, dict):
-            adata.uns[key] = _stringify_dict_keys(val)
-
-
 def _sanitize_df_columns(df: pd.DataFrame) -> None:
     """Convert object-dtype columns in a DataFrame to string for h5ad.
 
