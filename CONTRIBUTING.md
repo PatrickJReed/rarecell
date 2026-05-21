@@ -23,12 +23,15 @@ uv run pytest
 
 ## Pre-commit hooks
 
-Once pre-commit configuration lands (see Plan 1, Task 24), install the
-hooks with:
+Install pre-commit hooks (ruff lint + format + mypy on src/):
 
 ```bash
 uv run pre-commit install
 ```
+
+This will lint and type-check on every commit.
+
+If a hook fails, fix the reported issue and re-stage. Do not bypass with `--no-verify`.
 
 ## Conduct
 

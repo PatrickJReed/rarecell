@@ -1,4 +1,5 @@
 """Replay determinism — same input + profile + decisions yields byte-identical output."""
+
 from __future__ import annotations
 
 import hashlib

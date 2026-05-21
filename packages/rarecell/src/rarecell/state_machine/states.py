@@ -1,4 +1,5 @@
 """IsolateState enum + valid transitions."""
+
 from __future__ import annotations
 
 from enum import Enum, auto
@@ -19,17 +20,17 @@ class IsolateState(Enum):
 
 
 _TRANSITIONS = {
-    IsolateState.S0_LOAD:    {IsolateState.S1_INGEST},
-    IsolateState.S1_INGEST:  {IsolateState.S2_QC},
-    IsolateState.S2_QC:      {IsolateState.S3_CLUSTER},
+    IsolateState.S0_LOAD: {IsolateState.S1_INGEST},
+    IsolateState.S1_INGEST: {IsolateState.S2_QC},
+    IsolateState.S2_QC: {IsolateState.S3_CLUSTER},
     IsolateState.S3_CLUSTER: {IsolateState.S4_GATE1},
-    IsolateState.S4_GATE1:   {IsolateState.S5_PURIFY, IsolateState.S6_FINAL},
-    IsolateState.S5_PURIFY:  {IsolateState.S5_GATE2},
-    IsolateState.S5_GATE2:   {IsolateState.S6_FINAL},
-    IsolateState.S6_FINAL:   {IsolateState.S6_GATE3},
-    IsolateState.S6_GATE3:   {IsolateState.S7_REPORT},
-    IsolateState.S7_REPORT:  set(),
-    IsolateState.S_ABORTED:  set(),
+    IsolateState.S4_GATE1: {IsolateState.S5_PURIFY, IsolateState.S6_FINAL},
+    IsolateState.S5_PURIFY: {IsolateState.S5_GATE2},
+    IsolateState.S5_GATE2: {IsolateState.S6_FINAL},
+    IsolateState.S6_FINAL: {IsolateState.S6_GATE3},
+    IsolateState.S6_GATE3: {IsolateState.S7_REPORT},
+    IsolateState.S7_REPORT: set(),
+    IsolateState.S_ABORTED: set(),
 }
 
 

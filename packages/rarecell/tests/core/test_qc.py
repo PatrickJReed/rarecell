@@ -15,8 +15,9 @@ def _toy_adata(n=1000):
 
 def test_run_qc_filters_with_profile_params():
     a = _toy_adata()
-    params = QCParams(min_genes_per_cell=150, max_pct_mt=10,
-                      max_genes_per_cell=10000, min_cells_per_gene=3)
+    params = QCParams(
+        min_genes_per_cell=150, max_pct_mt=10, max_genes_per_cell=10000, min_cells_per_gene=3
+    )
     out = run_qc(a, params)
     assert "n_genes_by_counts" in out.obs.columns
     assert "pct_counts_mt" in out.obs.columns

@@ -1,0 +1,21 @@
+name: test
+on: [push, pull_request]
+jobs:
+  unit:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v3
+      - run: uv sync --all-packages --all-extras --dev --python ${{ matrix.python-version }}
+      - run: uv run pytest packages/rarecell/tests tests/fixtures tests/integration/test_replay_determinism.py tests/integration/test_synthetic_end_to_end.py -v
+  integration-pbmc:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v3
+      - run: uv sync --all-packages --all-extras --dev
+      - run: uv run pytest tests/integration/test_pbmc3k.py -v -m integration

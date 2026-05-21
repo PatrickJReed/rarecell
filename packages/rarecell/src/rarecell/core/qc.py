@@ -1,4 +1,5 @@
 """Profile-driven QC metrics, cell/gene filtering, and per-sample Scrublet."""
+
 from __future__ import annotations
 
 import anndata as ad
@@ -29,7 +30,11 @@ def run_qc(adata: ad.AnnData, params: QCParams) -> ad.AnnData:
     # Mitochondrial gene flag (human MT- prefix convention).
     adata.var["mt"] = adata.var_names.str.startswith("MT-")
     sc.pp.calculate_qc_metrics(
-        adata, qc_vars=["mt"], percent_top=None, log1p=False, inplace=True,
+        adata,
+        qc_vars=["mt"],
+        percent_top=None,
+        log1p=False,
+        inplace=True,
     )
 
     # Filter 1: min genes per cell
@@ -42,9 +47,7 @@ def run_qc(adata: ad.AnnData, params: QCParams) -> ad.AnnData:
     adata = adata[adata.obs["pct_counts_mt"] <= params.max_pct_mt, :].copy()
 
     # Filter 4: max genes per cell
-    adata = adata[
-        adata.obs["n_genes_by_counts"] <= params.max_genes_per_cell, :
-    ].copy()
+    adata = adata[adata.obs["n_genes_by_counts"] <= params.max_genes_per_cell, :].copy()
 
     log.info(
         "qc.complete",

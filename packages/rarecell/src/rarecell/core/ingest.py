@@ -1,4 +1,5 @@
 """Ingest: count validation, symbol conversion, gene filtering, obs-name dedup."""
+
 from __future__ import annotations
 
 import os
@@ -25,6 +26,7 @@ _DEFAULT_GENE_ANN_CACHE = _DEFAULT_CACHE_DIR / "gene_annotations.tsv"
 # ─────────────────────────────────────────────────────────────────────────────
 # Count validation
 # ─────────────────────────────────────────────────────────────────────────────
+
 
 def _looks_like_counts(matrix) -> bool:
     """Heuristic: integer-valued (or near-integer-valued) and non-negative."""
@@ -61,6 +63,7 @@ def validate_counts(adata: ad.AnnData) -> CountsLocation:
 # Obs-name deduplication across samples
 # ─────────────────────────────────────────────────────────────────────────────
 
+
 def make_obs_names_unique_across_samples(
     adata_list: list[ad.AnnData],
     sample_ids: list[str],
@@ -81,6 +84,7 @@ def make_obs_names_unique_across_samples(
 # ─────────────────────────────────────────────────────────────────────────────
 # BioMart helpers (cached)
 # ─────────────────────────────────────────────────────────────────────────────
+
 
 def _load_or_query_biomart(cache_path: str | os.PathLike | None = None) -> pd.DataFrame:
     """Load cached Ensembl-to-symbol mapping, or query BioMart and cache it.
@@ -129,9 +133,13 @@ def _load_or_query_gene_annotations(
 
     server = Server(host="http://www.ensembl.org")
     dataset = server.marts["ENSEMBL_MART_ENSEMBL"].datasets["hsapiens_gene_ensembl"]
-    df = dataset.query(attributes=[
-        "external_gene_name", "gene_biotype", "chromosome_name",
-    ])
+    df = dataset.query(
+        attributes=[
+            "external_gene_name",
+            "gene_biotype",
+            "chromosome_name",
+        ]
+    )
     df.columns = ["gene_name", "gene_biotype", "chromosome_name"]
     df = df.dropna(subset=["gene_name"])
     df = df[df["gene_name"].str.strip() != ""]
@@ -145,6 +153,7 @@ def _load_or_query_gene_annotations(
 # ─────────────────────────────────────────────────────────────────────────────
 # Gene filtering
 # ─────────────────────────────────────────────────────────────────────────────
+
 
 def get_protein_coding_autosomal_genes(adata: ad.AnnData) -> list[str]:
     """Return the list of gene symbols in ``adata.var_names`` that are
@@ -166,6 +175,7 @@ def get_protein_coding_autosomal_genes(adata: ad.AnnData) -> list[str]:
 # ─────────────────────────────────────────────────────────────────────────────
 # Ensembl → symbol conversion
 # ─────────────────────────────────────────────────────────────────────────────
+
 
 def convert_ensembl_to_symbols(
     adata: ad.AnnData,
@@ -210,12 +220,7 @@ def convert_ensembl_to_symbols(
         numeric_frac = vals.str.match(r"^[\d.]+$").mean()
         median_len = vals.str.len().median()
         n_unique = vals.nunique()
-        if (
-            ensg_in_col < 0.1
-            and numeric_frac < 0.5
-            and median_len < 20
-            and n_unique > 100
-        ):
+        if ensg_in_col < 0.1 and numeric_frac < 0.5 and median_len < 20 and n_unique > 100:
             existing_symbol_col = col
             break
 
@@ -254,6 +259,7 @@ def convert_ensembl_to_symbols(
 # ─────────────────────────────────────────────────────────────────────────────
 # Restore full gene set after HVG subsetting
 # ─────────────────────────────────────────────────────────────────────────────
+
 
 def _check_normalization(X, context: str = "") -> None:
     """Raise a RuntimeError if X does not look like log1p(CP10K) data.

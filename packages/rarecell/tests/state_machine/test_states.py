@@ -4,10 +4,18 @@ from rarecell.state_machine.states import IsolateState, valid_transitions
 
 
 def test_normal_progression():
-    seq = [IsolateState.S0_LOAD, IsolateState.S1_INGEST, IsolateState.S2_QC,
-           IsolateState.S3_CLUSTER, IsolateState.S4_GATE1,
-           IsolateState.S5_PURIFY, IsolateState.S5_GATE2,
-           IsolateState.S6_FINAL, IsolateState.S6_GATE3, IsolateState.S7_REPORT]
+    seq = [
+        IsolateState.S0_LOAD,
+        IsolateState.S1_INGEST,
+        IsolateState.S2_QC,
+        IsolateState.S3_CLUSTER,
+        IsolateState.S4_GATE1,
+        IsolateState.S5_PURIFY,
+        IsolateState.S5_GATE2,
+        IsolateState.S6_FINAL,
+        IsolateState.S6_GATE3,
+        IsolateState.S7_REPORT,
+    ]
     for a, b in pairwise(seq):
         assert b in valid_transitions(a)
 

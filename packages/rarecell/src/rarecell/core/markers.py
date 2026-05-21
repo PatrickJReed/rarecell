@@ -3,6 +3,7 @@
 score_panel is a thin wrapper over scanpy.tl.score_genes that also writes
 a boolean pass_<name> column based on a z-score threshold.
 """
+
 from __future__ import annotations
 
 import anndata as ad
@@ -13,8 +14,11 @@ from rarecell.profile.schema import TargetCellProfile
 
 
 def score_panel(
-    adata: ad.AnnData, name: str, genes: list[str],
-    threshold_z: float | None = None, use_raw: bool = True,
+    adata: ad.AnnData,
+    name: str,
+    genes: list[str],
+    threshold_z: float | None = None,
+    use_raw: bool = True,
 ) -> None:
     """Score a marker panel via sc.tl.score_genes.
 
@@ -32,15 +36,21 @@ def score_panel(
             adata.obs[f"pass_{name}"] = False
         return
 
-    sc.tl.score_genes(adata, gene_list=present, score_name=f"score_{name}",
-                      use_raw=use_raw and adata.raw is not None)
+    sc.tl.score_genes(
+        adata,
+        gene_list=present,
+        score_name=f"score_{name}",
+        use_raw=use_raw and adata.raw is not None,
+    )
     if threshold_z is not None:
         s = adata.obs[f"score_{name}"]
-        adata.obs[f"pass_{name}"] = (s > s.mean() + threshold_z * s.std())
+        adata.obs[f"pass_{name}"] = s > s.mean() + threshold_z * s.std()
 
 
 def score_profile_markers(
-    adata: ad.AnnData, profile: TargetCellProfile, use_raw: bool = True,
+    adata: ad.AnnData,
+    profile: TargetCellProfile,
+    use_raw: bool = True,
 ) -> None:
     """Score every positive_markers panel in the profile."""
     for name, panel in profile.positive_markers.items():
@@ -48,7 +58,9 @@ def score_profile_markers(
 
 
 def score_negative_panels(
-    adata: ad.AnnData, profile: TargetCellProfile, use_raw: bool = True,
+    adata: ad.AnnData,
+    profile: TargetCellProfile,
+    use_raw: bool = True,
 ) -> None:
     """Score negative_markers panels and write is_contaminant flag.
 
@@ -56,7 +68,6 @@ def score_negative_panels(
     """
     flags = np.zeros(adata.n_obs, dtype=bool)
     for name, panel in profile.negative_markers.items():
-        score_panel(adata, name, panel.genes, panel.exclusion_threshold_z,
-                    use_raw=use_raw)
+        score_panel(adata, name, panel.genes, panel.exclusion_threshold_z, use_raw=use_raw)
         flags |= adata.obs[f"pass_{name}"].to_numpy()
     adata.obs["is_contaminant"] = flags

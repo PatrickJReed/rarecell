@@ -2,6 +2,7 @@
 
 This file grows in Task 21 to include the full Report writer.
 """
+
 from __future__ import annotations
 
 import platform
@@ -70,9 +71,7 @@ class Manifest(BaseModel):
 
 def _git_commit_or_none() -> str | None:
     try:
-        return subprocess.check_output(
-            ["git", "rev-parse", "HEAD"], text=True
-        ).strip()
+        return subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip()
     except Exception:
         return None
 
@@ -127,9 +126,7 @@ def write_isolation_report(
 
     # decision_count from decisions.jsonl
     counts = Counter(d.gate for d in DecisionLog.iter_decisions(decisions_path))
-    decision_count = {
-        f"gate_{g}": counts.get(g, 0) for g in (1, 2, 3) if counts.get(g, 0) > 0
-    }
+    decision_count = {f"gate_{g}": counts.get(g, 0) for g in (1, 2, 3) if counts.get(g, 0) > 0}
 
     # input_summary
     input_summary = {
@@ -175,9 +172,7 @@ def write_isolation_report(
     # bibliography.bib — every citation referenced in the profile
     bib_entries: list[str] = []
     seen: set[tuple[str, str]] = set()
-    panels = list(profile.positive_markers.values()) + list(
-        profile.negative_markers.values()
-    )
+    panels = list(profile.positive_markers.values()) + list(profile.negative_markers.values())
     for panel in panels:
         for c in panel.citations:
             key_id = (c.source, c.source_id)
@@ -185,9 +180,7 @@ def write_isolation_report(
                 continue
             seen.add(key_id)
             key = c.source_id.replace(":", "_").replace("/", "_")
-            bib_entries.append(
-                f"@misc{{{key}, note = {{{c.source}: {c.source_id}}} }}\n"
-            )
+            bib_entries.append(f"@misc{{{key}, note = {{{c.source}: {c.source_id}}} }}\n")
     (out_dir / "bibliography.bib").write_text("".join(bib_entries))
 
     # replay.sh — bash recipe to reproduce

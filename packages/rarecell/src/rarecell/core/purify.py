@@ -11,6 +11,7 @@ Ported from als_utils.py:2167-2386 with the following generalizations:
     contaminant fraction exceeds ``1 - min_cluster_purity``).
   - Disabled / empty-input fast paths return the input AnnData unchanged.
 """
+
 from __future__ import annotations
 
 import anndata as ad
@@ -57,15 +58,20 @@ def _recluster_high_res(sub_adata: ad.AnnData, resolution: float) -> None:
 
     n_neighbors = min(30, n_cells - 1)
     n_neighbors = max(n_neighbors, 2)
-    sc.pp.neighbors(sub_adata, use_rep=use_rep, n_neighbors=n_neighbors,
-                    random_state=0)
-    sc.tl.leiden(sub_adata, resolution=float(resolution),
-                 flavor="igraph", n_iterations=2,
-                 key_added=PURIFY_CLUSTER_KEY, random_state=0)
+    sc.pp.neighbors(sub_adata, use_rep=use_rep, n_neighbors=n_neighbors, random_state=0)
+    sc.tl.leiden(
+        sub_adata,
+        resolution=float(resolution),
+        flavor="igraph",
+        n_iterations=2,
+        key_added=PURIFY_CLUSTER_KEY,
+        random_state=0,
+    )
 
 
 def _keep_subclusters(
-    table, profile: TargetCellProfile,
+    table,
+    profile: TargetCellProfile,
 ) -> list[str]:
     """Choose sub-clusters to keep based on the profile thresholds.
 
@@ -77,14 +83,16 @@ def _keep_subclusters(
     min_purity = float(profile.purify.min_cluster_purity)
     max_contam = 1.0 - min_purity
 
-    pass_cols = [f"pass_{name}_frac" for name in profile.positive_markers
-                 if f"pass_{name}_frac" in table.columns]
+    pass_cols = [
+        f"pass_{name}_frac"
+        for name in profile.positive_markers
+        if f"pass_{name}_frac" in table.columns
+    ]
 
     keep: list[str] = []
     for _, row in table.iterrows():
         if pass_cols:
-            vals = [float(row[c]) for c in pass_cols
-                    if not _isnan(row[c])]
+            vals = [float(row[c]) for c in pass_cols if not _isnan(row[c])]
             mean_pass = float(np.mean(vals)) if vals else 0.0
         else:
             mean_pass = 1.0  # nothing to fail on
@@ -154,21 +162,20 @@ def subcluster_and_purify(
         return adata
     if cluster_key not in adata.obs.columns:
         raise ValueError(
-            f"cluster_key '{cluster_key}' not in adata.obs. "
-            "Run clustering before purification."
+            f"cluster_key '{cluster_key}' not in adata.obs. " "Run clustering before purification."
         )
 
     suspect_ids = {str(c) for c in suspect_clusters}
     suspect_mask = adata.obs[cluster_key].astype(str).isin(suspect_ids)
     n_suspect = int(suspect_mask.sum())
     if n_suspect == 0:
-        log.info("purify.suspect_clusters_absent",
-                 suspect_clusters=sorted(suspect_ids))
+        log.info("purify.suspect_clusters_absent", suspect_clusters=sorted(suspect_ids))
         return adata
 
     log.info(
         "purify.start",
-        n_obs=int(adata.n_obs), n_suspect=n_suspect,
+        n_obs=int(adata.n_obs),
+        n_suspect=n_suspect,
         suspect_clusters=sorted(suspect_ids),
         high_resolution=float(profile.purify.high_resolution),
         min_cluster_purity=float(profile.purify.min_cluster_purity),
@@ -179,8 +186,7 @@ def subcluster_and_purify(
     # ── Re-cluster at high resolution ──
     _recluster_high_res(sub_adata, profile.purify.high_resolution)
     n_subclusters = int(sub_adata.obs[PURIFY_CLUSTER_KEY].nunique())
-    log.info("purify.reclustered", n_subclusters=n_subclusters,
-             n_obs=int(sub_adata.n_obs))
+    log.info("purify.reclustered", n_subclusters=n_subclusters, n_obs=int(sub_adata.n_obs))
 
     # ── Full annotation pipeline on the sub-population ──
     use_raw = sub_adata.raw is not None
@@ -193,39 +199,39 @@ def subcluster_and_purify(
         except Exception as e:  # network / model load / etc.
             log.warning(
                 "purify.celltypist_failed",
-                error_type=type(e).__name__, error=str(e),
+                error_type=type(e).__name__,
+                error=str(e),
             )
 
     if profile.biccn_rules.enabled:
         try:
-            score_biccn_evidence(sub_adata, profile,
-                                 cluster_key=PURIFY_CLUSTER_KEY)
+            score_biccn_evidence(sub_adata, profile, cluster_key=PURIFY_CLUSTER_KEY)
         except Exception as e:
             log.warning(
                 "purify.biccn_failed",
-                error_type=type(e).__name__, error=str(e),
+                error_type=type(e).__name__,
+                error=str(e),
             )
 
     table = score_evidence(sub_adata, profile, cluster_key=PURIFY_CLUSTER_KEY)
 
     # ── Decide which sub-clusters to keep ──
     keep_ids = _keep_subclusters(table, profile)
-    drop_ids = [str(c) for c in table["cluster"].astype(str).tolist()
-                if str(c) not in set(keep_ids)]
+    drop_ids = [
+        str(c) for c in table["cluster"].astype(str).tolist() if str(c) not in set(keep_ids)
+    ]
 
     log.info(
         "purify.subcluster_decisions",
         n_subclusters=n_subclusters,
-        n_keep=len(keep_ids), n_drop=len(drop_ids),
-        kept=keep_ids, dropped=drop_ids,
+        n_keep=len(keep_ids),
+        n_drop=len(drop_ids),
+        kept=keep_ids,
+        dropped=drop_ids,
     )
 
-    keep_subcluster_mask = (
-        sub_adata.obs[PURIFY_CLUSTER_KEY].astype(str).isin(set(keep_ids))
-    )
-    sub_kept_obs_names = set(
-        sub_adata.obs_names[keep_subcluster_mask.to_numpy()].tolist()
-    )
+    keep_subcluster_mask = sub_adata.obs[PURIFY_CLUSTER_KEY].astype(str).isin(set(keep_ids))
+    sub_kept_obs_names = set(sub_adata.obs_names[keep_subcluster_mask.to_numpy()].tolist())
 
     # ── Build the final keep mask on the original adata ──
     non_suspect_mask = ~suspect_mask.to_numpy()
@@ -241,7 +247,8 @@ def subcluster_and_purify(
     out = adata[keep_mask].copy()
     log.info(
         "purify.done",
-        n_in=int(adata.n_obs), n_out=int(out.n_obs),
+        n_in=int(adata.n_obs),
+        n_out=int(out.n_obs),
         n_dropped=int(adata.n_obs - out.n_obs),
     )
     return out

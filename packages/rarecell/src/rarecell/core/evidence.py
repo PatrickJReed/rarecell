@@ -12,6 +12,7 @@ Public surface:
 
 Plus plot helpers (return matplotlib Figures, no PDF saves).
 """
+
 from __future__ import annotations
 
 from math import exp, lgamma, log
@@ -28,15 +29,15 @@ from rarecell.profile.schema import TargetCellProfile
 # Minimal subset ported from als_utils to support the public API. Profiles
 # select which classes to use via biccn_rules.class_filter.
 BICCN_MARKER_RULES: dict[str, dict[str, list[str]]] = {
-    "TCELL":     {"present": ["CD3D", "CD3E", "TRAC"],     "absent": []},
-    "BCELL":     {"present": ["MS4A1", "CD79A"],            "absent": []},
-    "NK":        {"present": ["NKG7", "GNLY", "KLRD1"],     "absent": ["CD3D"]},
-    "MGL":       {"present": ["CSF1R", "P2RY12", "TMEM119"], "absent": ["CD3D"]},
-    "MONO":      {"present": ["CD14", "VCAN"],              "absent": ["CD3D"]},
-    "MAC":       {"present": ["CD68", "CD163"],             "absent": ["CD3D"]},
-    "NEURON":    {"present": ["RBFOX3", "SYT1", "SNAP25"],  "absent": []},
-    "ASTROCYTE": {"present": ["AQP4", "GFAP"],              "absent": []},
-    "OLIGO":     {"present": ["MBP", "MOG", "PLP1"],        "absent": []},
+    "TCELL": {"present": ["CD3D", "CD3E", "TRAC"], "absent": []},
+    "BCELL": {"present": ["MS4A1", "CD79A"], "absent": []},
+    "NK": {"present": ["NKG7", "GNLY", "KLRD1"], "absent": ["CD3D"]},
+    "MGL": {"present": ["CSF1R", "P2RY12", "TMEM119"], "absent": ["CD3D"]},
+    "MONO": {"present": ["CD14", "VCAN"], "absent": ["CD3D"]},
+    "MAC": {"present": ["CD68", "CD163"], "absent": ["CD3D"]},
+    "NEURON": {"present": ["RBFOX3", "SYT1", "SNAP25"], "absent": []},
+    "ASTROCYTE": {"present": ["AQP4", "GFAP"], "absent": []},
+    "OLIGO": {"present": ["MBP", "MOG", "PLP1"], "absent": []},
 }
 
 
@@ -126,10 +127,10 @@ def score_biccn_evidence(
     rules = _filtered_rules(profile)
     if not rules:
         adata.uns["biccn_evidence"] = {
-            "trinaries": {}, "rules": pd.DataFrame(columns=["cluster",
-                                                            "biccn_label",
-                                                            "biccn_score",
-                                                            "biccn_details"]),
+            "trinaries": {},
+            "rules": pd.DataFrame(
+                columns=["cluster", "biccn_label", "biccn_score", "biccn_details"]
+            ),
         }
         return
 
@@ -145,10 +146,10 @@ def score_biccn_evidence(
 
     if len(available_genes) == 0:
         adata.uns["biccn_evidence"] = {
-            "trinaries": {}, "rules": pd.DataFrame(columns=["cluster",
-                                                            "biccn_label",
-                                                            "biccn_score",
-                                                            "biccn_details"]),
+            "trinaries": {},
+            "rules": pd.DataFrame(
+                columns=["cluster", "biccn_label", "biccn_score", "biccn_details"]
+            ),
         }
         return
 
@@ -230,7 +231,7 @@ def score_biccn_evidence(
                 p *= t
             for g in absent_genes:
                 t = clust_trinaries[g]
-                p *= (1.0 - t)
+                p *= 1.0 - t
 
             details_parts.append(f"{ct_name}={p:.3f}")
 
@@ -241,12 +242,14 @@ def score_biccn_evidence(
         if best_score < 0.5:
             best_label = "Unassigned"
 
-        rows.append({
-            "cluster": str(clust),
-            "biccn_label": best_label,
-            "biccn_score": round(best_score, 3),
-            "biccn_details": "; ".join(details_parts),
-        })
+        rows.append(
+            {
+                "cluster": str(clust),
+                "biccn_label": best_label,
+                "biccn_score": round(best_score, 3),
+                "biccn_details": "; ".join(details_parts),
+            }
+        )
 
     df = pd.DataFrame(rows)
     adata.uns["biccn_evidence"] = {"trinaries": trinaries, "rules": df}
@@ -307,8 +310,7 @@ def score_evidence(
     """
     if cluster_key not in adata.obs.columns:
         raise ValueError(
-            f"cluster_key '{cluster_key}' not found in adata.obs. "
-            "Run clustering first."
+            f"cluster_key '{cluster_key}' not found in adata.obs. " "Run clustering first."
         )
 
     clusters = _sorted_clusters(adata.obs[cluster_key])
@@ -331,9 +333,7 @@ def score_evidence(
             score_col = f"score_{name}"
             pass_col = f"pass_{name}"
             if score_col in adata.obs.columns:
-                row[f"score_{name}_mean"] = round(
-                    float(adata.obs.loc[mask, score_col].mean()), 4
-                )
+                row[f"score_{name}_mean"] = round(float(adata.obs.loc[mask, score_col].mean()), 4)
             else:
                 row[f"score_{name}_mean"] = np.nan
             if pass_col in adata.obs.columns:
@@ -432,9 +432,9 @@ def render_consensus_table(
                 display_row.append(str(val) if pd.notna(val) else "N/A")
         display_values.append(display_row)
 
-    table = ax.table(cellText=display_values,
-                     colLabels=df.columns.tolist(),
-                     cellLoc="center", loc="center")
+    table = ax.table(
+        cellText=display_values, colLabels=df.columns.tolist(), cellLoc="center", loc="center"
+    )
     table.auto_set_font_size(False)
     table.set_fontsize(8)
     if n_cols_table > 0:
@@ -460,8 +460,9 @@ def render_consensus_table(
         header.set_facecolor("#333333")
         header.set_text_props(color="white", fontweight="bold")
 
-    ax.set_title(f"Consensus evidence table — {profile.profile_id}",
-                 fontsize=12, fontweight="bold", pad=14)
+    ax.set_title(
+        f"Consensus evidence table — {profile.profile_id}", fontsize=12, fontweight="bold", pad=14
+    )
     fig.tight_layout()
     return df, fig
 
@@ -489,7 +490,9 @@ def select_clusters(table: pd.DataFrame, recommendation: str) -> list[str]:
 
 
 def plot_stage_evidence(
-    adata: ad.AnnData, profile: TargetCellProfile, cluster_key: str = "leiden",
+    adata: ad.AnnData,
+    profile: TargetCellProfile,
+    cluster_key: str = "leiden",
 ) -> Figure:
     """Violin panels for positive-marker scores + a bar of contaminant fraction.
 
@@ -507,15 +510,13 @@ def plot_stage_evidence(
     cluster_strs = [str(c) for c in clusters]
 
     fig_width = max(8, len(clusters) * 0.6 + 2)
-    fig, axes = plt.subplots(1, n_panels, figsize=(fig_width * n_panels, 4),
-                             squeeze=False)
+    fig, axes = plt.subplots(1, n_panels, figsize=(fig_width * n_panels, 4), squeeze=False)
     axes_flat = axes[0]
 
     ax_idx = 0
     for col in score_cols:
         ax = axes_flat[ax_idx]
-        data = [adata.obs.loc[adata.obs[cluster_key] == c, col].to_numpy()
-                for c in clusters]
+        data = [adata.obs.loc[adata.obs[cluster_key] == c, col].to_numpy() for c in clusters]
         ax.violinplot(data, showmedians=True)
         ax.set_xticks(range(1, len(clusters) + 1))
         ax.set_xticklabels(cluster_strs, rotation=45, ha="right")
@@ -526,8 +527,7 @@ def plot_stage_evidence(
     if "is_contaminant" in adata.obs.columns:
         ax = axes_flat[ax_idx]
         fracs = [
-            float(adata.obs.loc[adata.obs[cluster_key] == c, "is_contaminant"]
-                  .astype(bool).mean())
+            float(adata.obs.loc[adata.obs[cluster_key] == c, "is_contaminant"].astype(bool).mean())
             for c in clusters
         ]
         ax.bar(cluster_strs, fracs, color="crimson", edgecolor="white")
@@ -542,7 +542,9 @@ def plot_stage_evidence(
 
 
 def plot_biccn_composition(
-    adata: ad.AnnData, profile: TargetCellProfile, cluster_key: str = "leiden",
+    adata: ad.AnnData,
+    profile: TargetCellProfile,
+    cluster_key: str = "leiden",
 ) -> Figure:
     """Stacked-bar of per-cell BICCN labels per cluster.
 
@@ -553,8 +555,14 @@ def plot_biccn_composition(
 
     if "biccn_label" not in adata.obs.columns or not profile.biccn_rules.enabled:
         fig, ax = plt.subplots(figsize=(6, 4))
-        ax.text(0.5, 0.5, "No BICCN labels — run score_biccn_evidence",
-                ha="center", va="center", transform=ax.transAxes)
+        ax.text(
+            0.5,
+            0.5,
+            "No BICCN labels — run score_biccn_evidence",
+            ha="center",
+            va="center",
+            transform=ax.transAxes,
+        )
         ax.set_axis_off()
         return fig
 
@@ -581,8 +589,7 @@ def plot_biccn_composition(
     bottom = np.zeros(len(clusters))
     for i, ct in enumerate(biccn_types):
         vals = frac_df[ct].to_numpy(dtype=float)
-        ax.bar(x, vals, bottom=bottom, label=ct, color=cmap(i),
-               edgecolor="white", linewidth=0.3)
+        ax.bar(x, vals, bottom=bottom, label=ct, color=cmap(i), edgecolor="white", linewidth=0.3)
         bottom += vals
 
     ax.set_xticks(x)
@@ -597,7 +604,9 @@ def plot_biccn_composition(
 
 
 def plot_biccn_dotplot(
-    adata: ad.AnnData, profile: TargetCellProfile, cluster_key: str = "leiden",
+    adata: ad.AnnData,
+    profile: TargetCellProfile,
+    cluster_key: str = "leiden",
 ) -> Figure:
     """Dotplot of BICCN rule-gene trinarization scores per cluster.
 
@@ -612,8 +621,14 @@ def plot_biccn_dotplot(
 
     if not trinaries or rules_df is None:
         fig, ax = plt.subplots(figsize=(6, 4))
-        ax.text(0.5, 0.5, "No BICCN trinarization — run score_biccn_evidence",
-                ha="center", va="center", transform=ax.transAxes)
+        ax.text(
+            0.5,
+            0.5,
+            "No BICCN trinarization — run score_biccn_evidence",
+            ha="center",
+            va="center",
+            transform=ax.transAxes,
+        )
         ax.set_axis_off()
         return fig
 
@@ -635,8 +650,14 @@ def plot_biccn_dotplot(
 
     if not gene_order:
         fig, ax = plt.subplots(figsize=(6, 4))
-        ax.text(0.5, 0.5, "No BICCN rule genes available",
-                ha="center", va="center", transform=ax.transAxes)
+        ax.text(
+            0.5,
+            0.5,
+            "No BICCN rule genes available",
+            ha="center",
+            va="center",
+            transform=ax.transAxes,
+        )
         ax.set_axis_off()
         return fig
 
@@ -663,8 +684,7 @@ def plot_biccn_dotplot(
         X_cl = X_rules[mask]
         det_rates[ci] = (X_cl > 0).sum(axis=0) / n_cells
 
-    biccn_map = dict(zip(rules_df["cluster"].astype(str),
-                         rules_df["biccn_label"], strict=False))
+    biccn_map = dict(zip(rules_df["cluster"].astype(str), rules_df["biccn_label"], strict=False))
 
     fig_height = max(4, n_clusters * 0.4 + 2)
     fig_width = max(8, n_genes * 0.6 + 3)
@@ -684,40 +704,73 @@ def plot_biccn_dotplot(
                 edge = "#d62728"
             else:
                 edge = "#bbbbbb"
-            ax.scatter(gi, ci, s=size, c=[[t_score]],
-                       cmap="RdYlGn", vmin=0, vmax=1,
-                       edgecolors=edge, linewidths=1.5, zorder=3)
+            ax.scatter(
+                gi,
+                ci,
+                s=size,
+                c=[[t_score]],
+                cmap="RdYlGn",
+                vmin=0,
+                vmax=1,
+                edgecolors=edge,
+                linewidths=1.5,
+                zorder=3,
+            )
 
     ax.set_xticks(range(n_genes))
     ax.set_xticklabels(gene_names, rotation=90, fontsize=9)
     ax.set_yticks(range(n_clusters))
-    ax.set_yticklabels([f"C{c} ({biccn_map.get(str(c), '?')})" for c in clusters],
-                       fontsize=9)
+    ax.set_yticklabels([f"C{c} ({biccn_map.get(str(c), '?')})" for c in clusters], fontsize=9)
     ax.set_xlim(-0.5, n_genes - 0.5)
     ax.set_ylim(-0.5, n_clusters - 0.5)
     ax.invert_yaxis()
     ax.grid(True, alpha=0.15)
 
     legend_elements = [
-        Line2D([0], [0], marker="o", color="w", markeredgecolor="#2ca02c",
-               markerfacecolor="#a8d5a2", markersize=10, markeredgewidth=2,
-               label="Confidently present (P>=0.8)"),
-        Line2D([0], [0], marker="o", color="w", markeredgecolor="#d62728",
-               markerfacecolor="#f4a4a0", markersize=10, markeredgewidth=2,
-               label="Confidently absent (P<=0.2)"),
-        Line2D([0], [0], marker="o", color="w", markeredgecolor="#bbbbbb",
-               markerfacecolor="#eeee99", markersize=10, markeredgewidth=2,
-               label="Uncertain"),
+        Line2D(
+            [0],
+            [0],
+            marker="o",
+            color="w",
+            markeredgecolor="#2ca02c",
+            markerfacecolor="#a8d5a2",
+            markersize=10,
+            markeredgewidth=2,
+            label="Confidently present (P>=0.8)",
+        ),
+        Line2D(
+            [0],
+            [0],
+            marker="o",
+            color="w",
+            markeredgecolor="#d62728",
+            markerfacecolor="#f4a4a0",
+            markersize=10,
+            markeredgewidth=2,
+            label="Confidently absent (P<=0.2)",
+        ),
+        Line2D(
+            [0],
+            [0],
+            marker="o",
+            color="w",
+            markeredgecolor="#bbbbbb",
+            markerfacecolor="#eeee99",
+            markersize=10,
+            markeredgewidth=2,
+            label="Uncertain",
+        ),
     ]
-    ax.legend(handles=legend_elements, bbox_to_anchor=(1.02, 1),
-              loc="upper left", fontsize=8)
+    ax.legend(handles=legend_elements, bbox_to_anchor=(1.02, 1), loc="upper left", fontsize=8)
     ax.set_title(f"{profile.profile_id} — BICCN trinarization")
     fig.tight_layout()
     return fig
 
 
 def plot_biccn_probability_table(
-    adata: ad.AnnData, profile: TargetCellProfile, cluster_key: str = "leiden",
+    adata: ad.AnnData,
+    profile: TargetCellProfile,
+    cluster_key: str = "leiden",
 ) -> Figure:
     """Heatmap of BICCN joint probabilities per cluster x cell type."""
     import matplotlib.pyplot as plt
@@ -728,8 +781,14 @@ def plot_biccn_probability_table(
 
     if not trinaries or rules_df is None:
         fig, ax = plt.subplots(figsize=(6, 4))
-        ax.text(0.5, 0.5, "No BICCN trinarization data",
-                ha="center", va="center", transform=ax.transAxes)
+        ax.text(
+            0.5,
+            0.5,
+            "No BICCN trinarization data",
+            ha="center",
+            va="center",
+            transform=ax.transAxes,
+        )
         ax.set_axis_off()
         return fig
 
@@ -749,11 +808,10 @@ def plot_biccn_probability_table(
             for g in present_genes:
                 p *= clust_trin[g]
             for g in absent_genes:
-                p *= (1.0 - clust_trin[g])
+                p *= 1.0 - clust_trin[g]
             prob_matrix[i, j] = p
 
-    biccn_map = dict(zip(rules_df["cluster"].astype(str),
-                         rules_df["biccn_label"], strict=False))
+    biccn_map = dict(zip(rules_df["cluster"].astype(str), rules_df["biccn_label"], strict=False))
     row_labels = [f"C{c} ({biccn_map.get(str(c), '?')})" for c in clusters]
 
     fig_height = max(4, len(clusters) * 0.4 + 1)
@@ -765,8 +823,7 @@ def plot_biccn_probability_table(
         for j in range(len(cell_types)):
             val = prob_matrix[i, j]
             color = "white" if val < 0.3 or val > 0.7 else "black"
-            ax.text(j, i, f"{val:.2f}", ha="center", va="center",
-                    fontsize=7, color=color)
+            ax.text(j, i, f"{val:.2f}", ha="center", va="center", fontsize=7, color=color)
 
     ax.set_xticks(range(len(cell_types)))
     ax.set_xticklabels(cell_types, rotation=45, ha="right", fontsize=9)
@@ -787,27 +844,42 @@ def plot_resolution_scan(adata: ad.AnnData, cluster_key: str = "leiden") -> Figu
     import matplotlib.pyplot as plt
 
     fig, ax = plt.subplots(figsize=(6, 4))
-    ax.text(0.5, 0.5, "plot_resolution_scan — pending (Plan 4)",
-            ha="center", va="center", transform=ax.transAxes)
+    ax.text(
+        0.5,
+        0.5,
+        "plot_resolution_scan — pending (Plan 4)",
+        ha="center",
+        va="center",
+        transform=ax.transAxes,
+    )
     ax.set_axis_off()
     return fig
 
 
 def plot_resolution_umap_comparison(
-    adata: ad.AnnData, cluster_key: str = "leiden",
+    adata: ad.AnnData,
+    cluster_key: str = "leiden",
 ) -> Figure:
     """TODO: ported in Plan 4 alongside Jupyter widget work."""
     import matplotlib.pyplot as plt
 
     fig, ax = plt.subplots(figsize=(6, 4))
-    ax.text(0.5, 0.5, "plot_resolution_umap_comparison — pending (Plan 4)",
-            ha="center", va="center", transform=ax.transAxes)
+    ax.text(
+        0.5,
+        0.5,
+        "plot_resolution_umap_comparison — pending (Plan 4)",
+        ha="center",
+        va="center",
+        transform=ax.transAxes,
+    )
     ax.set_axis_off()
     return fig
 
 
 def plot_annotation_confusion(
-    adata: ad.AnnData, profile: TargetCellProfile, cluster_key: str = "leiden",
+    adata: ad.AnnData,
+    profile: TargetCellProfile,
+    cluster_key: str = "leiden",
 ) -> Figure:
     """Confusion-matrix heatmap: clusters vs. ``cell_type_original`` obs column.
 
@@ -817,8 +889,14 @@ def plot_annotation_confusion(
 
     if "cell_type_original" not in adata.obs.columns:
         fig, ax = plt.subplots(figsize=(6, 4))
-        ax.text(0.5, 0.5, "No 'cell_type_original' obs column",
-                ha="center", va="center", transform=ax.transAxes)
+        ax.text(
+            0.5,
+            0.5,
+            "No 'cell_type_original' obs column",
+            ha="center",
+            va="center",
+            transform=ax.transAxes,
+        )
         ax.set_axis_off()
         return fig
 
@@ -853,8 +931,7 @@ def plot_annotation_confusion(
             pct = ct_pct.values[i, j]
             if pct >= 1:
                 text_color = "white" if pct > 60 else "black"
-                ax.text(j, i, f"{pct:.0f}%", ha="center", va="center",
-                        color=text_color, fontsize=7)
+                ax.text(j, i, f"{pct:.0f}%", ha="center", va="center", color=text_color, fontsize=7)
 
     cbar = fig.colorbar(im, ax=ax, shrink=0.8)
     cbar.set_label("% of cluster")
@@ -863,7 +940,9 @@ def plot_annotation_confusion(
 
 
 def plot_all_markers_dotplot(
-    adata: ad.AnnData, profile: TargetCellProfile, cluster_key: str = "leiden",
+    adata: ad.AnnData,
+    profile: TargetCellProfile,
+    cluster_key: str = "leiden",
 ) -> Figure:
     """Dotplot of every gene from every positive + negative panel in the profile.
 
@@ -894,23 +973,39 @@ def plot_all_markers_dotplot(
 
     if not marker_groups:
         fig, ax = plt.subplots(figsize=(6, 4))
-        ax.text(0.5, 0.5, "No profile marker genes present in adata",
-                ha="center", va="center", transform=ax.transAxes)
+        ax.text(
+            0.5,
+            0.5,
+            "No profile marker genes present in adata",
+            ha="center",
+            va="center",
+            transform=ax.transAxes,
+        )
         ax.set_axis_off()
         return fig
 
     try:
-        dp = sc.pl.dotplot(adata, var_names=marker_groups, groupby=cluster_key,
-                          use_raw=use_raw, show=False,
-                          title=f"{profile.profile_id} — all profile markers")
+        dp = sc.pl.dotplot(
+            adata,
+            var_names=marker_groups,
+            groupby=cluster_key,
+            use_raw=use_raw,
+            show=False,
+            title=f"{profile.profile_id} — all profile markers",
+        )
         dp.add_totals()
         dp.make_figure()
         fig = plt.gcf()
     except Exception:
         flat_genes = [g for genes in marker_groups.values() for g in genes]
-        sc.pl.dotplot(adata, var_names=flat_genes, groupby=cluster_key,
-                     use_raw=use_raw, show=False,
-                     title=f"{profile.profile_id} — all profile markers")
+        sc.pl.dotplot(
+            adata,
+            var_names=flat_genes,
+            groupby=cluster_key,
+            use_raw=use_raw,
+            show=False,
+            title=f"{profile.profile_id} — all profile markers",
+        )
         fig = plt.gcf()
 
     return fig

@@ -1,4 +1,5 @@
 """IsolateRunner — executes the S0..S7 state machine with a pluggable Recommender."""
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -71,9 +72,7 @@ class IsolateRunner:
         # Capture input summary before any QC mutation.
         self._input_n_obs = adata.n_obs
         self._input_n_vars = adata.n_vars
-        self._input_sample_ids = sorted(
-            set(map(str, adata.obs.get("sample_id", ["_"])))
-        )
+        self._input_sample_ids = sorted(set(map(str, adata.obs.get("sample_id", ["_"]))))
 
     # ── pipeline stages ────────────────────────────────────────────────
 
@@ -84,9 +83,7 @@ class IsolateRunner:
         import scanpy as sc
 
         self.adata = qc.run_qc(self.adata, self.profile.qc)
-        self.adata = qc.run_scrublet(
-            self.adata, batch_key=self.profile.batch_correction.batch_key
-        )
+        self.adata = qc.run_scrublet(self.adata, batch_key=self.profile.batch_correction.batch_key)
         # Bundle normalization into QC so downstream stages (clustering,
         # marker scoring) always see log1p(CP10K) in .X. qc.run_qc already
         # stashes raw counts to layers["counts"]; defensively check.
@@ -102,20 +99,16 @@ class IsolateRunner:
             annotate.annotate_celltypist(self.adata, self.profile)
         clustering.taxonomy_cluster(self.adata, self.profile, stage="class")
         if self.profile.biccn_rules.enabled:
-            evidence.score_biccn_evidence(
-                self.adata, self.profile, cluster_key="leiden"
-            )
+            evidence.score_biccn_evidence(self.adata, self.profile, cluster_key="leiden")
 
     # ── gate decision helpers ──────────────────────────────────────────
 
-    def _decide_for_gate(
-        self, gate: int, recs: list[Recommendation]
-    ) -> dict[str, str]:
+    def _decide_for_gate(self, gate: int, recs: list[Recommendation]) -> dict[str, str]:
         decisions: dict[str, str] = {}
         if self.auto_policy == "from_decisions":
-            assert self.replay_decisions_path is not None, (
-                "auto_policy='from_decisions' requires replay_decisions_path"
-            )
+            assert (
+                self.replay_decisions_path is not None
+            ), "auto_policy='from_decisions' requires replay_decisions_path"
             for d in DecisionLog.iter_decisions(self.replay_decisions_path):
                 if d.gate == gate:
                     decisions[d.cluster_id] = d.user_decision
@@ -128,9 +121,7 @@ class IsolateRunner:
                     "drop" if r.recommendation == "purify" else r.recommendation
                 )
             elif self.auto_policy == "abort_on_ambiguity":
-                threshold = (
-                    self.profile.auto_policy.gates.min_recommendation_confidence
-                )
+                threshold = self.profile.auto_policy.gates.min_recommendation_confidence
                 if r.confidence < threshold:
                     decisions[r.cluster_id] = "abort"
                 else:
@@ -159,9 +150,7 @@ class IsolateRunner:
             )
 
     def _s4_gate1(self) -> tuple[list[str], list[str]]:
-        table = evidence.score_evidence(
-            self.adata, self.profile, cluster_key="leiden"
-        )
+        table = evidence.score_evidence(self.adata, self.profile, cluster_key="leiden")
         recs = self.recommender.recommend(table)
         user_decisions = self._decide_for_gate(1, recs)
         self._log_decisions(1, recs, user_decisions)
@@ -169,8 +158,7 @@ class IsolateRunner:
         purify_ids = [cid for cid, d in user_decisions.items() if d == "purify"]
         if any(d == "abort" for d in user_decisions.values()):
             raise RuntimeError(
-                "Gate 1 produced an 'abort' decision under auto_policy="
-                f"{self.auto_policy!r}."
+                "Gate 1 produced an 'abort' decision under auto_policy=" f"{self.auto_policy!r}."
             )
         return kept, purify_ids
 
@@ -219,9 +207,7 @@ class IsolateRunner:
                     # from suspect clusters. Treat suspect-cluster ids that
                     # still have cells as additional keepers.
                     self.adata = purified
-                    surviving_ids = set(
-                        self.adata.obs["leiden"].astype(str).unique()
-                    )
+                    surviving_ids = set(self.adata.obs["leiden"].astype(str).unique())
                     extra = sorted(surviving_ids & set(suspect))
                     kept.extend(c for c in extra if c not in kept)
 

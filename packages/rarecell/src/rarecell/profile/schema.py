@@ -15,8 +15,9 @@ from rarecell.errors import UnreviewedProfileError
 
 class Citation(BaseModel):
     source_id: str
-    source: Literal["europepmc", "pubmed", "cellmarker", "panglaodb",
-                    "msigdb", "enrichr", "manual", "preset"]
+    source: Literal[
+        "europepmc", "pubmed", "cellmarker", "panglaodb", "msigdb", "enrichr", "manual", "preset"
+    ]
     title: str | None = None
     url: str | None = None
 
@@ -81,10 +82,12 @@ class BatchCorrection(BaseModel):
 
 
 class GateAutoPolicy(BaseModel):
-    gate1_cluster_decisions: Literal["recommendation", "abort_on_ambiguity",
-                                     "conservative_drop"] = "recommendation"
-    gate2_purify_decisions: Literal["recommendation", "abort_on_ambiguity",
-                                    "conservative_drop"] = "recommendation"
+    gate1_cluster_decisions: Literal[
+        "recommendation", "abort_on_ambiguity", "conservative_drop"
+    ] = "recommendation"
+    gate2_purify_decisions: Literal["recommendation", "abort_on_ambiguity", "conservative_drop"] = (
+        "recommendation"
+    )
     gate3_final: Literal["accept", "abort_on_anomaly"] = "accept"
     min_recommendation_confidence: float = Field(default=0.6, ge=0, le=1)
     max_abundance_deviation: float = Field(default=5.0, ge=1.0)
@@ -157,11 +160,9 @@ class TargetCellProfile(BaseModel):
         return cls.model_validate(data)
 
     def to_yaml_path(self, path: str | Path) -> None:
-        Path(path).write_text(yaml.safe_dump(self.model_dump(mode="json"),
-                                             sort_keys=False))
+        Path(path).write_text(yaml.safe_dump(self.model_dump(mode="json"), sort_keys=False))
 
     def compute_content_hash(self) -> str:
-        canonical = self.model_dump(mode="json",
-                                    exclude={"content_hash", "frozen"})
+        canonical = self.model_dump(mode="json", exclude={"content_hash", "frozen"})
         payload = yaml.safe_dump(canonical, sort_keys=True).encode()
         return "sha256:" + hashlib.sha256(payload).hexdigest()

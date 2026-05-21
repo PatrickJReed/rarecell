@@ -15,12 +15,19 @@ from scipy import sparse
 
 def _profile(in_dataset="harmony"):
     return TargetCellProfile(
-        profile_id="t", name="t", description="d", target_lineage="lymphoid",
+        profile_id="t",
+        name="t",
+        description="d",
+        target_lineage="lymphoid",
         tissue=["pbmc"],
         expected_abundance=ExpectedAbundance(min_fraction=0.1, max_fraction=0.6),
-        positive_markers={"pan_t": MarkerPanel(
-            genes=["CD3D"], threshold_z=1.0,
-            citations=[Citation(source_id="pmid:1", source="europepmc")])},
+        positive_markers={
+            "pan_t": MarkerPanel(
+                genes=["CD3D"],
+                threshold_z=1.0,
+                citations=[Citation(source_id="pmid:1", source="europepmc")],
+            )
+        },
         negative_markers={},
         qc=QCParams(min_genes_per_cell=200, max_pct_mt=10),
         batch_correction=BatchCorrection(in_dataset=in_dataset, batch_key="sample_id"),
@@ -42,7 +49,7 @@ def test_taxonomy_cluster_writes_leiden_and_pca():
     taxonomy_cluster(a, _profile(), stage="class")
     assert "leiden" in a.obs.columns
     assert "X_pca" in a.obsm
-    assert "X_pca_harmony" in a.obsm   # because in_dataset == "harmony"
+    assert "X_pca_harmony" in a.obsm  # because in_dataset == "harmony"
 
 
 def test_taxonomy_cluster_skips_harmony_when_none():

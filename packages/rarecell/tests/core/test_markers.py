@@ -41,13 +41,18 @@ def test_score_panel_writes_obs():
 
 def _profile():
     return TargetCellProfile(
-        profile_id="t", name="t", description="d", target_lineage="lymphoid",
+        profile_id="t",
+        name="t",
+        description="d",
+        target_lineage="lymphoid",
         tissue=["pbmc"],
         expected_abundance=ExpectedAbundance(min_fraction=0.1, max_fraction=0.6),
         positive_markers={
-            "pan_t": MarkerPanel(genes=["CD3D", "CD3E"], threshold_z=0.5,
-                                  citations=[Citation(source_id="pmid:1",
-                                                      source="europepmc")])
+            "pan_t": MarkerPanel(
+                genes=["CD3D", "CD3E"],
+                threshold_z=0.5,
+                citations=[Citation(source_id="pmid:1", source="europepmc")],
+            )
         },
         negative_markers={
             "b_cell": NegativePanel(genes=["MS4A1"], exclusion_threshold_z=0.5),

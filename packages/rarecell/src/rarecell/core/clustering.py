@@ -10,6 +10,7 @@ Ported from als_utils.py:1111-1794 with the following generalizations:
   - Random seeds (PCA, neighbors, Leiden, Harmony, silhouette subsampling)
     are pinned to 0 for replay determinism.
 """
+
 from __future__ import annotations
 
 from itertools import combinations
@@ -32,16 +33,16 @@ log = get_logger("rarecell.clustering")
 
 # Per-stage defaults; unknown stages fall back to the "class" preset.
 TAXONOMY_PARAMS: dict[str, dict[str, float | int]] = {
-    "class":    {"n_hvgs": 3000, "leiden_resolution": 0.1, "n_pcs": 30},
+    "class": {"n_hvgs": 3000, "leiden_resolution": 0.1, "n_pcs": 30},
     "subclass": {"n_hvgs": 2000, "leiden_resolution": 0.2, "n_pcs": 30},
-    "subtype":  {"n_hvgs": 1000, "leiden_resolution": 0.3, "n_pcs": 30},
+    "subtype": {"n_hvgs": 1000, "leiden_resolution": 0.3, "n_pcs": 30},
 }
 
 # Resolution candidates for silhouette-guided scan (same range for all stages).
 RESOLUTION_CANDIDATES: dict[str, list[float]] = {
-    "class":    [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 1.0],
+    "class": [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 1.0],
     "subclass": [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 1.0],
-    "subtype":  [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 1.0],
+    "subtype": [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 1.0],
 }
 
 # Cell-cycle gene lists (Tirosh et al. 2016).
@@ -70,6 +71,7 @@ G2M_GENES = [
 # ─────────────────────────────────────────────────────────────────────────────
 # Internal helpers (must be defined before taxonomy_cluster references them)
 # ─────────────────────────────────────────────────────────────────────────────
+
 
 def _stage_params(stage: str) -> dict[str, Any]:
     return dict(TAXONOMY_PARAMS.get(stage, TAXONOMY_PARAMS["class"]))
@@ -142,8 +144,7 @@ def _select_best_resolution(df: pd.DataFrame, default_res: float) -> float:
     metric_specs: list[tuple[str, bool, str]] = [
         ("silhouette_mean", False, "silhouette"),
     ]
-    if ("marker_overlap_score" in valid.columns
-            and valid["marker_overlap_score"].notna().any()):
+    if "marker_overlap_score" in valid.columns and valid["marker_overlap_score"].notna().any():
         metric_specs.append(("marker_overlap_score", True, "overlap_inv"))
 
     norm_cols: list[str] = []
@@ -165,15 +166,14 @@ def _select_best_resolution(df: pd.DataFrame, default_res: float) -> float:
 
     max_score = valid["_composite_score"].max()
     ties = valid[np.abs(valid["_composite_score"] - max_score) < 1e-9]
-    best_res = ties.loc[
-        (ties["resolution"] - default_res).abs().idxmin(), "resolution"
-    ]
+    best_res = ties.loc[(ties["resolution"] - default_res).abs().idxmin(), "resolution"]
     return float(best_res)
 
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Cluster-quality and marker-purity helpers
 # ─────────────────────────────────────────────────────────────────────────────
+
 
 def compute_cluster_quality(
     adata: ad.AnnData,
@@ -227,13 +227,15 @@ def compute_cluster_quality(
         cl_mask = labels_sub == cl
         cl_sil = sil_samples[cl_mask]
         full_count = int((labels == cl).sum())
-        rows.append({
-            "cluster": cl,
-            "n_cells": full_count,
-            "silhouette_mean": round(float(np.mean(cl_sil)), 4),
-            "silhouette_min": round(float(np.min(cl_sil)), 4),
-            "poorly_separated": bool(np.mean(cl_sil) < 0),
-        })
+        rows.append(
+            {
+                "cluster": cl,
+                "n_cells": full_count,
+                "silhouette_mean": round(float(np.mean(cl_sil)), 4),
+                "silhouette_min": round(float(np.min(cl_sil)), 4),
+                "poorly_separated": bool(np.mean(cl_sil) < 0),
+            }
+        )
 
     df = pd.DataFrame(rows)
     adata.uns[f"cluster_quality_{stage}"] = df
@@ -286,18 +288,26 @@ def compute_marker_purity(
 
         try:
             sc.tl.rank_genes_groups(
-                adata_de, groupby="_tmp_cluster", method="wilcoxon",
-                n_genes=n_top_genes, use_raw=False,
+                adata_de,
+                groupby="_tmp_cluster",
+                method="wilcoxon",
+                n_genes=n_top_genes,
+                use_raw=False,
             )
         except Exception as e:
             log.warning(
                 "clustering.marker_purity_de_failed",
-                resolution=float(res), error=str(e),
+                resolution=float(res),
+                error=str(e),
             )
-            rows.append({
-                "resolution": float(res), "mean_top_lfc": np.nan,
-                "frac_sig_clusters": np.nan, "marker_overlap_score": np.nan,
-            })
+            rows.append(
+                {
+                    "resolution": float(res),
+                    "mean_top_lfc": np.nan,
+                    "frac_sig_clusters": np.nan,
+                    "marker_overlap_score": np.nan,
+                }
+            )
             continue
 
         result = adata_de.uns["rank_genes_groups"]
@@ -328,12 +338,14 @@ def compute_marker_purity(
         else:
             overlap = 0.0
 
-        rows.append({
-            "resolution": float(res),
-            "mean_top_lfc": round(mean_lfc, 4),
-            "frac_sig_clusters": round(frac_sig, 4),
-            "marker_overlap_score": round(overlap, 4),
-        })
+        rows.append(
+            {
+                "resolution": float(res),
+                "mean_top_lfc": round(mean_lfc, 4),
+                "frac_sig_clusters": round(frac_sig, 4),
+                "marker_overlap_score": round(overlap, 4),
+            }
+        )
 
     return pd.DataFrame(rows)
 
@@ -341,6 +353,7 @@ def compute_marker_purity(
 # ─────────────────────────────────────────────────────────────────────────────
 # Silhouette-guided Leiden resolution scan
 # ─────────────────────────────────────────────────────────────────────────────
+
 
 def scan_leiden_resolution(
     adata: ad.AnnData,
@@ -376,18 +389,26 @@ def scan_leiden_resolution(
     for res in resolutions:
         tmp_key = f"_leiden_scan_{res}"
         sc.tl.leiden(
-            adata, resolution=res, flavor="igraph", n_iterations=2,
-            key_added=tmp_key, random_state=0,
+            adata,
+            resolution=res,
+            flavor="igraph",
+            n_iterations=2,
+            key_added=tmp_key,
+            random_state=0,
         )
         labels = adata.obs[tmp_key].values
         n_clust = len(np.unique(labels))
 
         if n_clust < 2:
-            rows.append({
-                "resolution": float(res), "n_clusters": n_clust,
-                "silhouette_mean": np.nan, "silhouette_median": np.nan,
-                "wc_dispersion": np.nan,
-            })
+            rows.append(
+                {
+                    "resolution": float(res),
+                    "n_clusters": n_clust,
+                    "silhouette_mean": np.nan,
+                    "silhouette_median": np.nan,
+                    "wc_dispersion": np.nan,
+                }
+            )
             del adata.obs[tmp_key]
             continue
 
@@ -408,12 +429,15 @@ def scan_leiden_resolution(
                 wc_disp += float(np.mean(np.sum((cl_embed - cl_center) ** 2, axis=1)))
         wc_disp /= max(len(unique_sub), 1)
 
-        rows.append({
-            "resolution": float(res), "n_clusters": n_clust,
-            "silhouette_mean": round(sil_mean, 4),
-            "silhouette_median": round(sil_median, 4),
-            "wc_dispersion": round(wc_disp, 4),
-        })
+        rows.append(
+            {
+                "resolution": float(res),
+                "n_clusters": n_clust,
+                "silhouette_mean": round(sil_mean, 4),
+                "silhouette_median": round(sil_median, 4),
+                "wc_dispersion": round(wc_disp, 4),
+            }
+        )
 
         del adata.obs[tmp_key]
 
@@ -438,6 +462,7 @@ def scan_leiden_resolution(
 # ─────────────────────────────────────────────────────────────────────────────
 # Public API
 # ─────────────────────────────────────────────────────────────────────────────
+
 
 def _default_leiden_key(stage: str) -> str:
     """Canonical leiden key for a stage. ``stage="class"`` uses bare "leiden"."""
@@ -516,10 +541,16 @@ def taxonomy_cluster(
 
     log.info(
         "clustering.start",
-        stage=stage, n_obs=int(adata.n_obs), n_vars=int(adata.n_vars),
-        n_hvgs=n_hvgs, n_pcs=n_pcs, leiden_resolution=resolution,
-        batch_key=batch_key, in_dataset=in_dataset,
-        regress_vars=list(regress_vars), n_neighbors=n_neighbors,
+        stage=stage,
+        n_obs=int(adata.n_obs),
+        n_vars=int(adata.n_vars),
+        n_hvgs=n_hvgs,
+        n_pcs=n_pcs,
+        leiden_resolution=resolution,
+        batch_key=batch_key,
+        in_dataset=in_dataset,
+        regress_vars=list(regress_vars),
+        n_neighbors=n_neighbors,
     )
 
     # ── Cell-cycle scoring (before subsetting). Graceful skip if too few
@@ -529,14 +560,15 @@ def taxonomy_cluster(
     if len(s_present) >= 5 and len(g_present) >= 5:
         try:
             sc.tl.score_genes_cell_cycle(
-                adata, s_genes=s_present, g2m_genes=g_present,
+                adata,
+                s_genes=s_present,
+                g2m_genes=g_present,
             )
-            adata.obs["cycle_diff"] = (
-                adata.obs["S_score"] - adata.obs["G2M_score"]
-            )
+            adata.obs["cycle_diff"] = adata.obs["S_score"] - adata.obs["G2M_score"]
             log.info(
                 "clustering.cell_cycle_scored",
-                n_s=len(s_present), n_g2m=len(g_present),
+                n_s=len(s_present),
+                n_g2m=len(g_present),
             )
         except Exception as e:
             log.warning("clustering.cell_cycle_score_failed", error=str(e))
@@ -544,7 +576,8 @@ def taxonomy_cluster(
     else:
         log.info(
             "clustering.cell_cycle_skipped",
-            n_s=len(s_present), n_g2m=len(g_present),
+            n_s=len(s_present),
+            n_g2m=len(g_present),
         )
         regress_vars = [v for v in regress_vars if v != "cycle_diff"]
 
@@ -563,15 +596,15 @@ def taxonomy_cluster(
         adata_hvg = adata.copy()
         log.warning(
             "clustering.hvg_pc_autosomal_fallback",
-            n_pc_autosomal=len(pc_auto), n_total=int(adata.n_vars),
+            n_pc_autosomal=len(pc_auto),
+            n_total=int(adata.n_vars),
         )
 
     # ── HVG selection ──
     n_hvgs = min(n_hvgs, adata_hvg.n_vars)
     use_batch = (
         batch_key
-        if (batch_key in adata_hvg.obs.columns
-            and adata_hvg.obs[batch_key].nunique() > 1)
+        if (batch_key in adata_hvg.obs.columns and adata_hvg.obs[batch_key].nunique() > 1)
         else None
     )
     if use_batch is not None:
@@ -579,18 +612,23 @@ def taxonomy_cluster(
         if sizes.min() < 2:
             log.warning(
                 "clustering.batched_hvg_tiny_batch",
-                smallest_batch=str(sizes.idxmin()), size=int(sizes.min()),
+                smallest_batch=str(sizes.idxmin()),
+                size=int(sizes.min()),
             )
             use_batch = None
     try:
         sc.pp.highly_variable_genes(
-            adata_hvg, n_top_genes=n_hvgs, batch_key=use_batch,
+            adata_hvg,
+            n_top_genes=n_hvgs,
+            batch_key=use_batch,
         )
     except (IndexError, ValueError) as e:
         if use_batch is not None:
             log.warning("clustering.batched_hvg_retry", error=str(e))
             sc.pp.highly_variable_genes(
-                adata_hvg, n_top_genes=n_hvgs, batch_key=None,
+                adata_hvg,
+                n_top_genes=n_hvgs,
+                batch_key=None,
             )
         else:
             raise
@@ -618,15 +656,16 @@ def taxonomy_cluster(
 
     # ── Harmony (optional, profile-driven) ──
     if in_dataset == "harmony":
-        run_harmony = (
-            batch_key in adata.obs.columns
-            and adata.obs[batch_key].nunique() > 1
-        )
+        run_harmony = batch_key in adata.obs.columns and adata.obs[batch_key].nunique() > 1
         if run_harmony:
             import harmonypy
+
             harmony_out = harmonypy.run_harmony(
-                adata.obsm["X_pca"], adata.obs, batch_key,
-                max_iter_harmony=20, random_state=0,
+                adata.obsm["X_pca"],
+                adata.obs,
+                batch_key,
+                max_iter_harmony=20,
+                random_state=0,
             )
             Z = harmony_out.Z_corr
             # harmonypy versions differ on orientation.
@@ -635,7 +674,8 @@ def taxonomy_cluster(
             adata.obsm["X_pca_harmony"] = np.asarray(Z)
             use_rep = "X_pca_harmony"
             log.info(
-                "clustering.harmony_done", batch_key=batch_key,
+                "clustering.harmony_done",
+                batch_key=batch_key,
                 n_batches=int(adata.obs[batch_key].nunique()),
             )
         else:
@@ -651,7 +691,10 @@ def taxonomy_cluster(
 
     # ── Neighbors + UMAP ──
     sc.pp.neighbors(
-        adata, use_rep=use_rep, n_neighbors=n_neighbors, n_pcs=n_pcs,
+        adata,
+        use_rep=use_rep,
+        n_neighbors=n_neighbors,
+        n_pcs=n_pcs,
         random_state=0,
     )
     sc.tl.umap(adata, random_state=0)
@@ -661,7 +704,13 @@ def taxonomy_cluster(
     if not user_overrode and adata.n_obs >= 100:
         candidates = _resolution_candidates(stage, resolution)
         scan_df, best_res = scan_leiden_resolution(
-            adata, candidates, use_rep, n_neighbors, n_pcs, stage, leiden_key,
+            adata,
+            candidates,
+            use_rep,
+            n_neighbors,
+            n_pcs,
+            stage,
+            leiden_key,
         )
         adata.uns[f"resolution_scan_{stage}"] = scan_df
         resolution = best_res
@@ -669,8 +718,10 @@ def taxonomy_cluster(
 
     adata.uns[f"recommended_resolution_{stage}"] = resolution
     adata.uns[f"_taxonomy_params_{stage}"] = {
-        "use_rep": use_rep, "n_neighbors": n_neighbors,
-        "n_pcs": n_pcs, "leiden_key": leiden_key,
+        "use_rep": use_rep,
+        "n_neighbors": n_neighbors,
+        "n_pcs": n_pcs,
+        "leiden_key": leiden_key,
     }
 
     finalize_taxonomy_cluster(adata, stage, resolution)
@@ -689,8 +740,7 @@ def finalize_taxonomy_cluster(
     params = adata.uns.get(f"_taxonomy_params_{stage}")
     if params is None:
         raise ValueError(
-            f"No taxonomy params found for stage '{stage}'. "
-            "Run taxonomy_cluster() first."
+            f"No taxonomy params found for stage '{stage}'. " "Run taxonomy_cluster() first."
         )
 
     leiden_key = params["leiden_key"]
@@ -700,13 +750,15 @@ def finalize_taxonomy_cluster(
     if resolution is None:
         resolution = adata.uns.get(f"recommended_resolution_{stage}")
         if resolution is None:
-            raise ValueError(
-                f"No recommended resolution for stage '{stage}'."
-            )
+            raise ValueError(f"No recommended resolution for stage '{stage}'.")
 
     sc.tl.leiden(
-        adata, resolution=float(resolution), flavor="igraph",
-        n_iterations=2, key_added=leiden_key, random_state=0,
+        adata,
+        resolution=float(resolution),
+        flavor="igraph",
+        n_iterations=2,
+        key_added=leiden_key,
+        random_state=0,
     )
 
     # When the canonical key is stage-suffixed, also mirror to "leiden" for
@@ -715,13 +767,19 @@ def finalize_taxonomy_cluster(
         adata.obs["leiden"] = adata.obs[leiden_key]
 
     compute_cluster_quality(
-        adata, stage, leiden_key=leiden_key, use_rep=use_rep, n_pcs=n_pcs,
+        adata,
+        stage,
+        leiden_key=leiden_key,
+        use_rep=use_rep,
+        n_pcs=n_pcs,
     )
 
     n_clusters = int(adata.obs[leiden_key].nunique())
     adata.uns[f"recommended_resolution_{stage}"] = float(resolution)
     log.info(
-        "clustering.finalize", stage=stage, n_clusters=n_clusters,
+        "clustering.finalize",
+        stage=stage,
+        n_clusters=n_clusters,
         resolution=float(resolution),
     )
 
@@ -729,6 +787,7 @@ def finalize_taxonomy_cluster(
 # ─────────────────────────────────────────────────────────────────────────────
 # In-place AnnData replacement (HVG subset)
 # ─────────────────────────────────────────────────────────────────────────────
+
 
 def _replace_inplace(dst: ad.AnnData, src: ad.AnnData) -> None:
     """Replace ``dst``'s data with ``src``'s data, preserving identity.

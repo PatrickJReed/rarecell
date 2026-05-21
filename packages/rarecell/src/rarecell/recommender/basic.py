@@ -1,4 +1,5 @@
 """Heuristic-only recommender. No LLM; used when [agent] extra not installed."""
+
 from __future__ import annotations
 
 import pandas as pd
@@ -31,19 +32,22 @@ class BasicRecommender(Recommender):
                 reasoning = f"Strong positive signal ({best_pass:.2f}) and low contamination."
             elif best_pass < 0.1 or contam > 0.4:
                 rec, conf = "drop", 0.85
-                reasoning = (f"Weak positive ({best_pass:.2f}) "
-                             f"or heavy contamination ({contam:.2f}).")
+                reasoning = (
+                    f"Weak positive ({best_pass:.2f}) " f"or heavy contamination ({contam:.2f})."
+                )
             else:
                 rec, conf = "purify", 0.55
                 reasoning = "Mixed signal — recommend surgical subclustering."
 
             ev = {n: float(row.get(f"score_{n}_mean", 0.0)) for n in positive_names}
             ev["is_contaminant_frac"] = float(contam)
-            out.append(Recommendation(
-                cluster_id=str(row["cluster"]),
-                recommendation=rec,
-                confidence=conf,
-                evidence_summary=ev,
-                reasoning=reasoning,
-            ))
+            out.append(
+                Recommendation(
+                    cluster_id=str(row["cluster"]),
+                    recommendation=rec,
+                    confidence=conf,
+                    evidence_summary=ev,
+                    reasoning=reasoning,
+                )
+            )
         return out

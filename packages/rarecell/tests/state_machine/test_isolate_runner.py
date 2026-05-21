@@ -1,4 +1,5 @@
 """Tests for the IsolateRunner state machine driver."""
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -16,6 +17,7 @@ from rarecell.profile.schema import (
 )
 from rarecell.recommender.basic import BasicRecommender
 from rarecell.state_machine.isolate import IsolateRunner
+
 from tests.fixtures.make_synthetic import make_synthetic
 
 

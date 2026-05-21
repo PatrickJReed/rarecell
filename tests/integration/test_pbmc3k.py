@@ -3,6 +3,7 @@
 Fetched via `sc.datasets.pbmc3k()`. Marked `integration` so CI can gate it
 to pull_request runs only.
 """
+
 from pathlib import Path
 
 import pytest
@@ -11,8 +12,10 @@ from rarecell.profile.schema import TargetCellProfile
 from rarecell.recommender.basic import BasicRecommender
 from rarecell.state_machine.isolate import IsolateRunner
 
-PRESET = (Path(__file__).resolve().parents[2]
-          / "packages/rarecell/src/rarecell/profile/presets/t_cell_pbmc.yaml")
+PRESET = (
+    Path(__file__).resolve().parents[2]
+    / "packages/rarecell/src/rarecell/profile/presets/t_cell_pbmc.yaml"
+)
 
 
 @pytest.fixture(scope="module")
@@ -28,22 +31,29 @@ def pbmc3k():
 def test_pbmc3k_isolates_t_cells(pbmc3k, tmp_path: Path):
     # Load the preset, mark reviewed, disable celltypist (no model in CI), freeze
     profile = TargetCellProfile.from_yaml_path(PRESET)
-    profile = profile.model_copy(update={
-        "human_reviewed": True,
-        "reviewer": "ci@x",
-    })
+    profile = profile.model_copy(
+        update={
+            "human_reviewed": True,
+            "reviewer": "ci@x",
+        }
+    )
     # Disable celltypist for CI speed (no model fetch)
-    profile = profile.model_copy(update={
-        "reference_labels": profile.reference_labels.model_copy(
-            update={"celltypist_models": []}),
-    })
+    profile = profile.model_copy(
+        update={
+            "reference_labels": profile.reference_labels.model_copy(
+                update={"celltypist_models": []}
+            ),
+        }
+    )
     # Loosen purify min_cluster_purity. With threshold_z=1.0, a pure T-cell
     # subcluster has pass_pan_t_cell_frac ≈ 0.16-0.35 (z-thresholds are
     # dataset-wide), so the default 0.7 would drop every subcluster on a
     # homogeneous dataset like PBMC 3k.
-    profile = profile.model_copy(update={
-        "purify": profile.purify.model_copy(update={"min_cluster_purity": 0.2}),
-    })
+    profile = profile.model_copy(
+        update={
+            "purify": profile.purify.model_copy(update={"min_cluster_purity": 0.2}),
+        }
+    )
     profile = profile.freeze()
 
     # PBMC 3k ships raw integer counts in .X. The pipeline now bundles
@@ -53,9 +63,11 @@ def test_pbmc3k_isolates_t_cells(pbmc3k, tmp_path: Path):
     adata.obs["sample_id"] = "pbmc3k_sample"
 
     runner = IsolateRunner(
-        adata=adata, profile=profile,
+        adata=adata,
+        profile=profile,
         recommender=BasicRecommender(profile),
-        out_dir=tmp_path, auto_policy="recommendation",
+        out_dir=tmp_path,
+        auto_policy="recommendation",
     )
     result = runner.run()
 

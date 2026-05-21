@@ -56,17 +56,18 @@ def test_make_obs_names_unique():
 
 
 def test_get_protein_coding_autosomal_genes(monkeypatch):
-    fake_ann = pd.DataFrame({
-        "gene_name": ["CD3D", "MT-ATP6", "XIST", "GAPDH"],
-        "chromosome_name": ["11", "MT", "X", "12"],
-        "gene_biotype": ["protein_coding"] * 4,
-    })
+    fake_ann = pd.DataFrame(
+        {
+            "gene_name": ["CD3D", "MT-ATP6", "XIST", "GAPDH"],
+            "chromosome_name": ["11", "MT", "X", "12"],
+            "gene_biotype": ["protein_coding"] * 4,
+        }
+    )
     monkeypatch.setattr(
         "rarecell.core.ingest._load_or_query_gene_annotations",
         lambda *a, **kw: fake_ann,
     )
-    a = ad.AnnData(X=np.zeros((1, 4)),
-                   var={"gene_symbols": ["CD3D", "MT-ATP6", "XIST", "GAPDH"]})
+    a = ad.AnnData(X=np.zeros((1, 4)), var={"gene_symbols": ["CD3D", "MT-ATP6", "XIST", "GAPDH"]})
     a.var_names = ["CD3D", "MT-ATP6", "XIST", "GAPDH"]
     keep = get_protein_coding_autosomal_genes(a)
     assert set(keep) == {"CD3D", "GAPDH"}

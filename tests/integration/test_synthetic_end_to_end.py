@@ -1,4 +1,5 @@
 """Synthetic end-to-end: recall and precision on the planted 5% rare cluster."""
+
 from pathlib import Path
 
 from rarecell.profile.schema import (

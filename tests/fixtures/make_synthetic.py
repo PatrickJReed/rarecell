@@ -4,6 +4,7 @@
 CD3D/CD3E expression (the "rare T cells"). Other clusters express
 neuron-like (RBFOX3), astrocyte-like (GFAP), or B-cell-like (MS4A1) markers.
 """
+
 from __future__ import annotations
 
 import anndata as ad
@@ -11,11 +12,19 @@ import numpy as np
 from scipy import sparse
 
 GENES = [
-    "CD3D", "CD3E", "CD3G", "TRAC",     # T cell positive
-    "MS4A1", "CD79A",                    # B cell (negative panel)
-    "GFAP", "AQP4", "ALDH1L1",           # astrocyte (negative)
-    "RBFOX3", "SNAP25", "SYT1",          # neuron (negative)
-] + [f"GENE{i}" for i in range(488)]     # filler — 500 genes total
+    "CD3D",
+    "CD3E",
+    "CD3G",
+    "TRAC",  # T cell positive
+    "MS4A1",
+    "CD79A",  # B cell (negative panel)
+    "GFAP",
+    "AQP4",
+    "ALDH1L1",  # astrocyte (negative)
+    "RBFOX3",
+    "SNAP25",
+    "SYT1",  # neuron (negative)
+] + [f"GENE{i}" for i in range(488)]  # filler — 500 genes total
 
 
 def make_synthetic(seed: int = 0, n_cells: int = 5000) -> ad.AnnData:
@@ -25,10 +34,14 @@ def make_synthetic(seed: int = 0, n_cells: int = 5000) -> ad.AnnData:
     labels = np.concatenate([np.full(s, i) for i, s in enumerate(sizes)])
 
     X = rng.poisson(0.5, size=(n_cells, len(GENES))).astype(float)
-    for ci, marker_idxs in enumerate([(9, 10, 11),     # neuron
-                                       (6, 7, 8),       # astrocyte
-                                       (4, 5),          # B cell
-                                       (0, 1, 2, 3)]):  # T cell (the rare one)
+    for ci, marker_idxs in enumerate(
+        [
+            (9, 10, 11),  # neuron
+            (6, 7, 8),  # astrocyte
+            (4, 5),  # B cell
+            (0, 1, 2, 3),
+        ]
+    ):  # T cell (the rare one)
         rows = np.where(labels == ci)[0]
         for j in marker_idxs:
             X[rows, j] += rng.poisson(15, size=rows.shape[0])

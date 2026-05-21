@@ -4,6 +4,7 @@ CellTypist models, Enrichr libraries, and consensus-label rules are all
 driven by the TargetCellProfile / caller — nothing here is tissue- or
 lineage-specific.
 """
+
 from __future__ import annotations
 
 import os
@@ -30,7 +31,9 @@ def _model_label(model_filename: str) -> str:
 
 
 def _run_one_celltypist_model(
-    adata: ad.AnnData, model_name: str, majority_voting: bool = True,
+    adata: ad.AnnData,
+    model_name: str,
+    majority_voting: bool = True,
 ) -> pd.DataFrame:
     """Run a single CellTypist model. Returns predicted_labels DataFrame.
 
@@ -42,7 +45,9 @@ def _run_one_celltypist_model(
 
     model = ct_models.Model.load(model=model_name)
     predictions = celltypist.annotate(
-        adata, model=model, majority_voting=majority_voting,
+        adata,
+        model=model,
+        majority_voting=majority_voting,
     )
     return predictions.predicted_labels
 
@@ -126,8 +131,11 @@ def enrichr_cell_type_enrichment(
 
         try:
             enr = gseapy.enrichr(
-                gene_list=list(genes), gene_sets=gene_sets,
-                organism=organism, outdir=None, no_plot=True,
+                gene_list=list(genes),
+                gene_sets=gene_sets,
+                organism=organism,
+                outdir=None,
+                no_plot=True,
             )
             consecutive_failures = 0
         except Exception as e:
@@ -181,17 +189,25 @@ def plot_enrichr_bubble(
             continue
         top = df.sort_values("Adjusted P-value").head(top_n)
         for _, row in top.iterrows():
-            plot_rows.append({
-                "group": str(group_id),
-                "term": str(row["Term"])[:40],
-                "neg_log10_pval": -np.log10(max(row["Adjusted P-value"], 1e-300)),
-                "library": row.get("Gene_set", ""),
-            })
+            plot_rows.append(
+                {
+                    "group": str(group_id),
+                    "term": str(row["Term"])[:40],
+                    "neg_log10_pval": -np.log10(max(row["Adjusted P-value"], 1e-300)),
+                    "library": row.get("Gene_set", ""),
+                }
+            )
 
     if not plot_rows:
         fig, ax = plt.subplots(figsize=(6, 4))
-        ax.text(0.5, 0.5, "No significant enrichment terms",
-                ha="center", va="center", transform=ax.transAxes)
+        ax.text(
+            0.5,
+            0.5,
+            "No significant enrichment terms",
+            ha="center",
+            va="center",
+            transform=ax.transAxes,
+        )
         ax.set_axis_off()
         ax.set_title(title)
         return fig
@@ -201,25 +217,32 @@ def plot_enrichr_bubble(
     cmap = plt.get_cmap("tab10", max(len(libs), 1))
     lib_colors = {lib: cmap(i) for i, lib in enumerate(libs)}
 
-    fig, ax = plt.subplots(figsize=(
-        max(8, len(plot_df["group"].unique()) * 1.2),
-        max(6, len(plot_df["term"].unique()) * 0.35),
-    ))
+    fig, ax = plt.subplots(
+        figsize=(
+            max(8, len(plot_df["group"].unique()) * 1.2),
+            max(6, len(plot_df["term"].unique()) * 0.35),
+        )
+    )
 
     for lib in libs:
         sub = plot_df[plot_df["library"] == lib]
         ax.scatter(
-            sub["group"], sub["term"],
+            sub["group"],
+            sub["term"],
             s=sub["neg_log10_pval"] * 20,
             c=[lib_colors[lib]] * len(sub),
-            label=lib, alpha=0.7, edgecolors="k", linewidths=0.5,
+            label=lib,
+            alpha=0.7,
+            edgecolors="k",
+            linewidths=0.5,
         )
 
     ax.set_xlabel("Group")
     ax.set_ylabel("Enrichment term")
     ax.set_title(title)
-    ax.legend(title="Library", bbox_to_anchor=(1.05, 1), loc="upper left",
-              fontsize=7, title_fontsize=8)
+    ax.legend(
+        title="Library", bbox_to_anchor=(1.05, 1), loc="upper left", fontsize=7, title_fontsize=8
+    )
     fig.tight_layout()
     return fig
 
@@ -256,10 +279,7 @@ def build_consensus_labels(
 
     if output_key is None:
         suffix = celltypist_key.replace("celltypist_", "").replace("_label_majority", "")
-        output_key = (
-            f"consensus_{suffix}_with_original" if original_key
-            else f"consensus_{suffix}"
-        )
+        output_key = f"consensus_{suffix}_with_original" if original_key else f"consensus_{suffix}"
 
     labels = adata.obs[celltypist_key].astype(str).copy()
 
