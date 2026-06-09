@@ -1,0 +1,16 @@
+species	official_symbol	cell_type	nicknames	ubiquitousness_index
+Hs	CD3D	T cells		0.18
+Hs	CD3E	T cells		0.17
+Hs	CD8A	T cells (CD8+)		0.10
+Hs	FOXP3	T cells (regulatory)		0.05
+Hs	MS4A1	B cells		0.08
+Hs	CD79A	B cells		0.07
+Hs	NCAM1	NK cells		0.12
+Hs	NKG7	NK cells		0.11
+Hs	CX3CR1	Microglia		0.15
+Hs	P2RY12	Microglia		0.06
+Hs	GFAP	Astrocytes		0.20
+Hs	RBFOX3	Neurons		0.22
+Hs	CD14	Monocytes		0.30
+Hs	LYZ	Monocytes		0.28
+Hs	CLEC9A	Dendritic cells		0.04

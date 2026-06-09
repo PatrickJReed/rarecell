@@ -1,0 +1,35 @@
+[project]
+name = "rarecell-mcp-knowledge"
+version = "0.1.0.dev0"
+description = "MCP server: literature + marker DB retrieval for rarecell"
+authors = [{name = "Patrick Reed", email = "patrickjenningsreed@gmail.com"}]
+license = "Apache-2.0"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+  "fastmcp>=0.4",
+  "httpx>=0.27",
+  "pydantic>=2.6",
+  "structlog>=24.1",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8",
+  "pytest-cov",
+  "pytest-asyncio>=0.23",
+  "respx>=0.21",
+  "hypothesis>=6",
+  "ruff",
+  "mypy",
+]
+
+[project.scripts]
+rarecell-mcp-knowledge = "rarecell_mcp_knowledge.cli:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/rarecell_mcp_knowledge"]

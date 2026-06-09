@@ -1,0 +1,26 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.testmondata
+.coverage
+htmlcov/
+dist/
+build/
+.venv/
+.env
+.idea/
+.vscode/
+.DS_Store
+runs/
+data/
+*.h5ad
+!**/tests/*/data/
+!**/tests/*/data/*.h5ad
+!**/tests/*/data/*.tsv
+.pybiomart.sqlite
+
+# Local Claude Code worktrees (development-only; never push to remote)
+.claude/

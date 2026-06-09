@@ -1,0 +1,15 @@
+name: lint
+on: [push, pull_request]
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v3
+      - run: uv sync --all-packages --all-extras --dev
+      - run: uv run ruff check .
+      - run: uv run ruff format --check .
+      # mypy is informational for v0.1 — the codebase has ~24 strict-mode
+      # errors to clean up before this becomes a blocking check.
+      - run: uv run mypy packages/rarecell/src --ignore-missing-imports
+        continue-on-error: true
