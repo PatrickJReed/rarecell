@@ -15,7 +15,7 @@ from rarecell.recommender.basic import BasicRecommender
 from rarecell.state_machine.isolate import IsolateRunner
 
 app = typer.Typer(
-    help="rarecell — profile-driven rare-cell isolation from single-cell RNA-seq.",
+    help="rarecell — profile-driven isolation of rare and hard-to-resolve cell populations from single-cell RNA-seq.",
     no_args_is_help=True,
 )
 
@@ -62,7 +62,7 @@ def isolate(
         ),
     ] = None,
 ):
-    """Run rare-cell isolation on an AnnData and write an IsolationReport."""
+    """Isolate the target population from an AnnData and write an IsolationReport."""
     typer.echo(f"Loading profile from {profile_path}")
     profile = TargetCellProfile.from_yaml_path(profile_path)
     if not profile.frozen:

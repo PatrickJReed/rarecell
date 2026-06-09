@@ -1,7 +1,7 @@
 [project]
 name = "rarecell"
 version = "0.1.0.dev1"
-description = "Agentic rare-cell isolation from single-cell RNA-seq"
+description = "Agentic, provenance-tracked isolation of rare and hard-to-resolve cell populations from single-cell RNA-seq"
 authors = [{name = "Patrick Reed", email = "patrickjenningsreed@gmail.com"}]
 license = "Apache-2.0"
 readme = "../../README.md"
