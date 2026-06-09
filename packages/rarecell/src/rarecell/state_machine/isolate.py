@@ -145,9 +145,9 @@ class IsolateRunner:
     def _decide_for_gate(self, gate: int, recs: list[Recommendation]) -> dict[str, str]:
         decisions: dict[str, str] = {}
         if self.auto_policy == "from_decisions":
-            assert (
-                self.replay_decisions_path is not None
-            ), "auto_policy='from_decisions' requires replay_decisions_path"
+            assert self.replay_decisions_path is not None, (
+                "auto_policy='from_decisions' requires replay_decisions_path"
+            )
             for d in DecisionLog.iter_decisions(self.replay_decisions_path):
                 if d.gate == gate:
                     decisions[d.cluster_id] = d.user_decision

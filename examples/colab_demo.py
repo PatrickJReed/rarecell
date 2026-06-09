@@ -476,7 +476,7 @@ runner2 = IsolateRunner(
     replay_decisions_path=result.decisions_path,
 )
 result2 = runner2.run()
-assert (
-    result2.isolated.n_obs == result.isolated.n_obs
-), f"Replay mismatch: {result2.isolated.n_obs} vs {result.isolated.n_obs}"
+assert result2.isolated.n_obs == result.isolated.n_obs, (
+    f"Replay mismatch: {result2.isolated.n_obs} vs {result.isolated.n_obs}"
+)
 print(f"\nReplay deterministic: both isolated {result.isolated.n_obs} cells")

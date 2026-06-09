@@ -480,9 +480,9 @@ def _harmony_integrate(adata: ad.AnnData, *, batch_key: str) -> None:
         z = z.T
     # Precondition: n_obs != n_pcs (guaranteed by the n_pcs cap in taxonomy_cluster).
     # If they were equal the orient guard above could not detect a mis-oriented matrix.
-    assert (
-        z.shape[0] != z.shape[1] or z.shape[0] == adata.n_obs
-    ), "Ambiguous harmony output shape: n_obs must not equal n_pcs."
+    assert z.shape[0] != z.shape[1] or z.shape[0] == adata.n_obs, (
+        "Ambiguous harmony output shape: n_obs must not equal n_pcs."
+    )
     adata.obsm["X_pca_harmony"] = z
 
 

@@ -84,14 +84,14 @@ def test_anchor_paper_fetches_abstract_first(tmp_path, monkeypatch):
         anchor_paper="38448582",
     )
 
-    assert fetch_abstract_calls == [
-        "38448582"
-    ], f"Expected fetch_abstract to be called once with anchor_paper id; got {fetch_abstract_calls}"
+    assert fetch_abstract_calls == ["38448582"], (
+        f"Expected fetch_abstract to be called once with anchor_paper id; got {fetch_abstract_calls}"
+    )
     # Anchor paper PMID must appear somewhere in the prompt Claude saw
     sent_messages = mock_client.messages_create.call_args.kwargs["messages"]
-    assert any(
-        "38448582" in m["content"] for m in sent_messages
-    ), "anchor paper PMID must appear in Claude's prompt"
+    assert any("38448582" in m["content"] for m in sent_messages), (
+        "anchor paper PMID must appear in Claude's prompt"
+    )
     assert profile.profile_id == "anchor-astrocyte-snap"
 
 
