@@ -80,6 +80,21 @@ def _celltypist_compat() -> Generator[None, None, None]:
         _ct_train_mod.LogisticRegression = _ORIG_LR_IN_CELLTYPIST  # type: ignore[attr-defined]
 
 
+def _normalize_classifier(model: Model) -> None:
+    """Recast a ``_CompatLR`` classifier back to plain ``LogisticRegression``.
+
+    CellTypist pickles ``model.classifier``; under :func:`_celltypist_compat`
+    that is our build-only ``_CompatLR`` subclass, whose module (``scripts...``)
+    is not installed at runtime — so the saved bundle would fail to unpickle with
+    ``ModuleNotFoundError: No module named 'scripts'``. The fitted state is
+    identical to a plain ``LogisticRegression``; only the class reference matters.
+    """
+    clf = model.classifier
+    if isinstance(clf, _CompatLR):
+        clf.__class__ = LogisticRegression
+        clf.__dict__.pop("multi_class", None)
+
+
 def _heldout_donor_split(
     adata: ad.AnnData, donor_key: str, frac: float, seed: int
 ) -> NDArray[np.bool_]:
@@ -149,6 +164,9 @@ def train_decision(
             n_jobs=-1,
             check_expression=check_expression,
         )
+    # Strip the build-only _CompatLR class so the saved bundle unpickles at
+    # runtime (where the `scripts` package isn't installed).
+    _normalize_classifier(model)
 
     pred = celltypist.annotate(test_ad, model=model)
     y_true = test_ad.obs[label_key].astype(str).to_numpy()

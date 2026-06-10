@@ -54,3 +54,19 @@ def test_train_decision_returns_model_metrics_and_markers() -> None:
     assert any(len(genes) > 0 for genes in panels.values())
     # Model must be writable to disk (celltypist Model API).
     assert hasattr(model, "write")
+
+
+def test_trained_model_has_no_build_only_class_in_pickle() -> None:
+    # The fitted classifier must be plain sklearn LogisticRegression, not the
+    # build-only _CompatLR shim, so the pickled bundle unpickles at runtime where
+    # the `scripts` package is not installed (ModuleNotFoundError: 'scripts').
+    import pickle
+
+    from sklearn.linear_model import LogisticRegression
+
+    a = _separable_adata()
+    model, _, _ = train.train_decision(
+        a, "label", donor_key="donor_id", top_genes=20, seed=0, check_expression=False
+    )
+    assert type(model.classifier) is LogisticRegression
+    assert b"scripts" not in pickle.dumps({"Model": model.classifier})
