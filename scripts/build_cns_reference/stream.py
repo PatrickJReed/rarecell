@@ -67,7 +67,11 @@ def stream_balanced_atlas(
         if not dest.exists():
             log.info("stream.download", title=ds.title, cells=ds.cell_count)
             discover.download(ds.h5ad_url, dest)
-        a = ad.read_h5ad(dest)
+        # Backed read: load obs/var only, leaving X on disk. The largest
+        # dissection files are ~1.5 GB compressed and inflate to ~8 GB in RAM;
+        # loading every one fully would OOM a standard runtime. We only ever
+        # materialize the bounded per-cluster subsample below.
+        a = ad.read_h5ad(dest, backed="r")
         cl_key = labelmod.resolve_label_column(a.obs, labelmod.CLUSTER_CANDIDATES)
 
         keep: set[str] = set()
@@ -83,7 +87,9 @@ def stream_balanced_atlas(
             kept_per_cluster[str(cl)] += n_take
         ordered = [n for n in a.obs_names if n in keep]  # original order = determinism
 
-        sub = a[ordered].copy()
+        # Materialize ONLY the sampled rows into memory (X for the subsample is
+        # read from disk here); the full file is never resident.
+        sub = a[ordered].to_memory()
         _to_symbols(sub)
         parts.append(sub)
         log.info(
@@ -94,6 +100,8 @@ def stream_balanced_atlas(
             running=sum(p.n_obs for p in parts),
             clusters_seen=len(kept_per_cluster),
         )
+        if a.isbacked:
+            a.file.close()
         del a
 
     atlas = ad.concat(parts, join="inner")

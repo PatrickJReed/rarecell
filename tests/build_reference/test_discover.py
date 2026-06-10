@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import httpx
+import pytest
 import respx
 
 from scripts.build_cns_reference import discover
@@ -45,3 +46,19 @@ def test_download_streams_to_file(tmp_path: object) -> None:
     dest = Path(str(tmp_path)) / "astro.h5ad"
     discover.download("https://x/astro.h5ad", dest)
     assert dest.read_bytes() == b"H5ADBYTES"
+    # Atomic: no leftover temp file after a successful download.
+    assert not dest.with_name(dest.name + ".part").exists()
+
+
+@respx.mock
+def test_download_is_atomic_on_failure(tmp_path: object) -> None:
+    from pathlib import Path
+
+    # A failed download must leave NO file at dest (a truncated cache entry
+    # would be treated as complete on the next run and crash the HDF5 reader).
+    respx.get("https://x/broken.h5ad").mock(return_value=httpx.Response(500))
+    dest = Path(str(tmp_path)) / "broken.h5ad"
+    with pytest.raises(httpx.HTTPStatusError):
+        discover.download("https://x/broken.h5ad", dest)
+    assert not dest.exists()
+    assert not dest.with_name(dest.name + ".part").exists()

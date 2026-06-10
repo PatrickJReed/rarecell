@@ -30,9 +30,11 @@
 # full ~3.4M-cell atlas is never held in memory), remaps Ensembl IDs to gene
 # symbols, trains the models, and writes the bundle.
 #
-# **Runtime:** ~30–60 min (mostly downloading ~5–10 GB of H5ADs). A standard
-# Colab runtime is sufficient (memory stays bounded); high-RAM helps the final
-# concat. **Cost:** none (no API keys needed).
+# **Runtime:** ~30–60 min (mostly downloading ~5–10 GB of H5ADs). **Use a
+# High-RAM Colab runtime** (Runtime → Change runtime type → High-RAM): per-file
+# streaming reads in backed mode so the full X never loads, but the largest
+# dissection files (~1.5 GB compressed → ~8 GB in RAM) and the final concat are
+# still RAM-heavy on the standard 12 GB runtime. **Cost:** none (no API keys).
 
 # %% [markdown]
 # ## 1. Clone the repo and install

@@ -52,8 +52,18 @@ def download(url: str, dest: Path, *, chunk: int = 1 << 20) -> None:
     httpx = _httpx()
     dest = Path(dest)
     dest.parent.mkdir(parents=True, exist_ok=True)
-    with httpx.stream("GET", url, timeout=None, follow_redirects=True) as resp:
-        resp.raise_for_status()
-        with open(dest, "wb") as fh:
-            for block in resp.iter_bytes(chunk):
-                fh.write(block)
+    # Download to a temp file and atomically rename on success. An interrupted
+    # download must never leave a truncated file at `dest`: the streaming cache
+    # treats any existing `dest` as complete, so a partial would be read back on
+    # the next run and crash the HDF5 reader.
+    tmp = dest.with_name(dest.name + ".part")
+    try:
+        with httpx.stream("GET", url, timeout=None, follow_redirects=True) as resp:
+            resp.raise_for_status()
+            with open(tmp, "wb") as fh:
+                for block in resp.iter_bytes(chunk):
+                    fh.write(block)
+        tmp.replace(dest)
+    finally:
+        if tmp.exists():
+            tmp.unlink()
