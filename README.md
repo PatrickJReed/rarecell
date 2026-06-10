@@ -42,9 +42,12 @@ astrocyte marker panel directly from Ling et al., *Nature* 2024
 API key (~$0.05 for the single drafting call). Source: `examples/colab_demo.ipynb`.
 
 **What is verified today:** the full pipeline runs end-to-end on synthetic data and
-**replays deterministically** (186 passing tests). A characterized precision/recall
-benchmark of the astrocyte isolation against brainSCOPE's own annotations is the
-next milestone — *no accuracy numbers are claimed here that aren't measured yet.*
+**replays deterministically** (186 passing tests), and the CNS reference bundle is
+**published** ([release `cns-WHB-2023`](https://github.com/PatrickJReed/rarecell/releases/tag/cns-WHB-2023))
+so the demo's progressive class-gate resolves out of the box. A characterized
+precision/recall benchmark of the astrocyte isolation against brainSCOPE's own
+annotations is the next milestone — *no accuracy numbers are claimed here that
+aren't measured yet.*
 
 ## How it works
 
@@ -121,8 +124,10 @@ dedicated method (GiniClust / RaceID / Milo).
   decision is logged and human-frozen. A head-to-head comparison is planned.
 - **Validation scope today is one cohort + a PBMC integration test**, not a broad
   multi-tissue benchmark.
-- **The CNS reference-gate requires building/publishing the reference bundle** (a
-  one-time offline step; see `scripts/build_cns_reference/`).
+- **The CNS reference-gate is brain-only and ships a v1 bundle.** It resolves a
+  published bundle ([release `cns-WHB-2023`](https://github.com/PatrickJReed/rarecell/releases/tag/cns-WHB-2023),
+  BICCN WHB v1.0, held-out accuracy ≈ 0.77); rebuild a stronger or different-tissue
+  reference via `scripts/build_cns_reference/`.
 - **rarecell orchestrates mature tools** (scanpy, CellTypist, Scrublet, Harmony);
   the contribution is the agent layer + provenance + opinionated pipeline, not new
   core algorithms.
