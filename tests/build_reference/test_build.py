@@ -78,3 +78,23 @@ def test_build_bundle_writes_manifest_taxonomy_and_decisions(tmp_path: object) -
     assert tree["Astrocyte"] == ["Astro-1", "Astro-2"]
     assert tree["Oligodendrocyte"] == ["Oligo-1"]
     assert tree["Microglia"] == ["Micro-1"]
+
+
+def test_build_bundle_hvg_reduces_when_over_max_genes(tmp_path: object) -> None:
+    # max_genes < n_vars forces the HVG pre-filter (which bounds CellTypist's
+    # memory on the real ~58k-gene atlas). The build must still complete.
+    atlas = _atlas()  # 40 genes
+    build.build_bundle(
+        atlas,
+        out_dir=tmp_path,  # type: ignore[arg-type]
+        biccn_release="WHB-test",
+        cells_per_class=60,
+        min_donors=2,
+        top_genes=8,
+        max_genes=15,  # 40 -> 15 genes before training
+        seed=0,
+        check_expression=False,
+    )
+    manifest = fmt.load_manifest(tmp_path)  # type: ignore[arg-type]
+    assert any(d.level == "supercluster" for d in manifest.decisions)
+    assert any(d.level == "cluster" for d in manifest.decisions)

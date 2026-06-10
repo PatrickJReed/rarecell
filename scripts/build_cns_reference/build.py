@@ -69,6 +69,7 @@ def build_bundle(
     cells_per_class: int = 5000,
     min_donors: int = 10,
     top_genes: int = 300,
+    max_genes: int = 5000,
     seed: int = 0,
     check_expression: bool = True,
 ) -> fmt.BundleManifest:
@@ -84,6 +85,19 @@ def build_bundle(
     sc_key = labelmod.resolve_label_column(atlas.obs, labelmod.SUPERCLUSTER_CANDIDATES)
     cl_key = labelmod.resolve_label_column(atlas.obs, labelmod.CLUSTER_CANDIDATES)
     donor_key = labelmod.resolve_label_column(atlas.obs, labelmod.DONOR_CANDIDATES)
+
+    # Bound the gene dimension before training. CellTypist's feature-selection
+    # pass densifies the training matrix, so the full ~58k-gene atlas needs
+    # ~36 GB for the supercluster model alone and OOMs even a High-RAM runtime.
+    # Pre-select highly variable genes once (HVG selection is sparse-safe) so
+    # every decision trains within a bounded set; CellTypist's own top_genes
+    # selection then runs inside it.
+    if max_genes and atlas.n_vars > max_genes:
+        import scanpy as sc
+
+        sc.pp.highly_variable_genes(atlas, n_top_genes=max_genes, flavor="seurat")
+        atlas = atlas[:, atlas.var["highly_variable"].to_numpy()].copy()
+        log.info("build.hvg_reduced", n_genes=int(atlas.n_vars))
 
     decisions: list[fmt.DecisionArtifact] = []
 

@@ -30,6 +30,10 @@ def main(argv: list[str] | None = None) -> None:
     # would drop every class. 2 keeps classes seen in >=2 of the 3 donors.
     ap.add_argument("--min-donors", type=int, default=2)
     ap.add_argument("--top-genes", type=int, default=300)
+    # Cap the gene dimension before CellTypist training (its feature-selection
+    # densifies; the full ~58k-gene atlas OOMs even High-RAM). HVGs are picked
+    # once across the atlas; 0 disables the cap.
+    ap.add_argument("--max-genes", type=int, default=5000)
     # Streaming caps: per_file_cap = max cells per cluster taken from each file;
     # max_per_cluster = max cells per cluster accumulated across all files.
     # Sampling is per-cluster so rare clusters get represented for the cluster
@@ -90,6 +94,7 @@ def main(argv: list[str] | None = None) -> None:
         cells_per_class=args.cells_per_class,
         min_donors=args.min_donors,
         top_genes=args.top_genes,
+        max_genes=args.max_genes,
         seed=args.seed,
         check_expression=False,
     )
