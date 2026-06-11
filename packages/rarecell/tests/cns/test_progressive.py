@@ -1,8 +1,22 @@
 from pathlib import Path
 
+import anndata as ad
+import numpy as np
 from rarecell.cns.bundle import ReferenceBundle
-from rarecell.cns.progressive import apply_progressive
+from rarecell.cns.progressive import _as_log1p_cp10k, apply_progressive
 from rarecell.cns.taxonomy import TaxonomyTree
+
+
+def test_as_log1p_cp10k_normalizes_only_raw_counts() -> None:
+    # Raw counts (max >> 9.22) get normalized into the log1p-CP10K range CellTypist
+    # requires; already-log-normalized data passes through untouched.
+    raw = ad.AnnData(X=np.array([[100.0, 0.0, 50.0], [0.0, 200.0, 10.0]], dtype=np.float32))
+    out = _as_log1p_cp10k(raw)
+    assert out is not raw
+    assert float(out.X.max()) <= 9.22
+
+    norm = ad.AnnData(X=np.array([[1.0, 0.0, 2.0]], dtype=np.float32))
+    assert _as_log1p_cp10k(norm) is norm
 
 
 def test_apply_progressive_supercluster_gate(tiny_bundle: Path, atlas_factory) -> None:

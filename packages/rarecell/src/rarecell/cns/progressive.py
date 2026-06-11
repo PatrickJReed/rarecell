@@ -23,6 +23,23 @@ class ProgressiveResult:
     provenance: dict[str, Any]
 
 
+def _as_log1p_cp10k(sub: ad.AnnData) -> ad.AnnData:
+    """Return ``sub`` as log1p counts-per-10k, normalizing a copy only if needed.
+
+    The reference CellTypist models require log1p-CP10K input and reject any
+    matrix with ``max > log1p(1e4) ≈ 9.22``. The query reaching the gate may still
+    be raw counts (the gate runs before the pipeline normalizes), so normalize a
+    copy in that case; if it is already log-normalized, pass it through. The
+    caller's matrix is never mutated, so the gate can narrow the raw input.
+    """
+    if sub.n_obs == 0 or float(sub.X.max()) <= 9.22:
+        return sub
+    out = sub.copy()
+    sc.pp.normalize_total(out, target_sum=1e4)
+    sc.pp.log1p(out)
+    return out
+
+
 def _predict_with_model(
     sub: ad.AnnData, bundle_dir: Path, artifact: DecisionArtifact
 ) -> tuple[np.ndarray, np.ndarray]:
@@ -30,7 +47,7 @@ def _predict_with_model(
     import celltypist
 
     model = load_model(bundle_dir, artifact)
-    pred = celltypist.annotate(sub, model=model)
+    pred = celltypist.annotate(_as_log1p_cp10k(sub), model=model)
     labels = pred.predicted_labels["predicted_labels"].astype(str).to_numpy()
     conf: np.ndarray = pred.probability_matrix.max(axis=1).to_numpy()
     return labels, conf
